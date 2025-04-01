@@ -1,0 +1,30 @@
+{
+    "feature_columns": [
+        "last_5_matches_runs_avg",
+        "last_5_matches_wickets_avg",
+        "last_5_matches_sr_avg",
+        "last_5_matches_er_avg",
+        "form_factor",
+        "consistency_score",
+        "pressure_index",
+        "days_since_last_match",
+        "is_home_game",
+        "is_powerplay_batsman",
+        "is_death_bowler",
+        "runs_mean",
+        "runs_std",
+        "wickets_mean",
+        "wickets_std",
+        "strike_rate_mean",
+        "strike_rate_std",
+        "economy_rate_mean",
+        "economy_rate_std"
+    ],
+    "model_types": {
+        "runs": "XGBRegressor",
+        "wickets": "RandomForestRegressor",
+        "strike_rate": "GradientBoostingRegressor",
+        "economy_rate": "GradientBoostingRegressor"
+    },
+    "last_trained": "2025-04-01T18:08:19.893361"
+}

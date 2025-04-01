@@ -1,0 +1,6 @@
+player_id,name,batting_average,strike_rate,bowling_average,economy_rate,recent_matches
+MS01,MS Dhoni,38.09,135.2,0.0,0.0,"[{""runs"":32,""wickets"":0,""strike_rate"":160.0,""economy_rate"":0.0},{""runs"":28,""wickets"":0,""strike_rate"":140.0,""economy_rate"":0.0}]"
+RO01,Rohit Sharma,31.32,130.5,0.0,0.0,"[{""runs"":28,""wickets"":0,""strike_rate"":127.27,""economy_rate"":0.0},{""runs"":35,""wickets"":0,""strike_rate"":145.83,""economy_rate"":0.0}]"
+HH01,Hardik Pandya,29.87,147.3,31.2,8.9,"[{""runs"":42,""wickets"":1,""strike_rate"":140.0,""economy_rate"":8.5},{""runs"":25,""wickets"":2,""strike_rate"":125.0,""economy_rate"":7.8}]"
+SKY01,Suryakumar Yadav,35.73,175.8,0.0,0.0,"[{""runs"":89,""wickets"":0,""strike_rate"":180.0,""economy_rate"":0.0},{""runs"":52,""wickets"":0,""strike_rate"":173.33,""economy_rate"":0.0}]"
+RJ01,Ravindra Jadeja,26.41,140.1,24.5,7.6,"[{""runs"":21,""wickets"":2,""strike_rate"":150.0,""economy_rate"":6.5},{""runs"":31,""wickets"":1,""strike_rate"":147.62,""economy_rate"":7.2}]" 

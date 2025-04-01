@@ -1,0 +1,17 @@
+{
+    "timestamp": "2025-04-01T16:37:51.706028",
+    "success": [
+        "Match schedule",
+        "Team roster: Chennai Super Kings",
+        "Team roster: Mumbai Indians",
+        "Team roster: Royal Challengers Bangalore",
+        "Team news: Chennai Super Kings",
+        "Team news: Mumbai Indians",
+        "Team news: Royal Challengers Bangalore"
+    ],
+    "failed": [
+        "Player stats: Virat Kohli",
+        "Player stats: MS Dhoni",
+        "Player stats: Rohit Sharma"
+    ]
+}

@@ -1,0 +1,14 @@
+Data Aggregation Report
+==================================================
+Generated on: 2025-04-01 18:50:27
+
+Total Matches: 0
+Total Players: 0
+
+Data Sources:
+- Historical matches (2008-2023)
+- Current season matches (2025)
+- Latest match updates (Cricbuzz)
+- IPL website data
+- Player statistics
+- Team rosters and availability
