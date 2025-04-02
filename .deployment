@@ -5,6 +5,9 @@ SCM_REPOSITORY_PATH=/home/site/repository
 SCM_TARGET_PATH=/home/site/wwwroot
 SCM_COMMAND=./startup.sh
 WEBSITE_RUN_FROM_PACKAGE=1
+PYTHON_USE_GUNICORN=true
+PYTHON_ENABLE_WORKER_EXTENSIONS=1
+PYTHON_ENABLE_GUNICORN_MULTIWORKERS=true
 
 [deployment]
 command = bash startup.sh 

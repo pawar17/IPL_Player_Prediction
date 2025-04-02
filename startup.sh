@@ -15,6 +15,7 @@ python -m pip install --upgrade pip
 
 # Install dependencies with memory optimization and error handling
 echo "Installing dependencies..."
+cd /home/site/wwwroot
 pip install --no-cache-dir -r requirements.txt --verbose || {
     echo "Failed to install dependencies"
     exit 1
