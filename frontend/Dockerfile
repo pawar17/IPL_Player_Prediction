@@ -1,31 +1,20 @@
-# Build stage
-FROM node:16-alpine as build
+# Use a Python base image
+FROM python:3.9-slim
 
+# Set working directory in the container
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy the requirements.txt file into the container
+COPY requirements.txt /app/
 
-# Install dependencies
-RUN npm install
+# Install the dependencies from the requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY . .
+# Copy the rest of the application code into the container
+COPY . /app/
 
-# Build the app
-RUN npm run build
+# Expose the port the app will run on (port 8000 is the default for Gunicorn)
+EXPOSE 8000
 
-# Production stage
-FROM nginx:alpine
-
-# Copy built assets from build stage
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port
-EXPOSE 80
-
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Command to run the Flask app using Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
