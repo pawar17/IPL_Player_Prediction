@@ -1,23 +1,40 @@
 #!/bin/bash
 
+# Enable debug mode
+set -x
+
 # Create necessary directories
+echo "Creating directories..."
 mkdir -p /home/site/wwwroot/logs
 mkdir -p /home/site/wwwroot/data
 
 # Ensure we're using the correct Python environment
+echo "Upgrading pip..."
 python -m pip install --upgrade pip
 
 # Install dependencies with memory optimization
+echo "Installing dependencies..."
 pip install --no-cache-dir -r requirements.txt --verbose
 
 # Set environment variables
+echo "Setting environment variables..."
 export FLASK_APP=app.py
 export FLASK_ENV=production
 export PORT=8000
 export PYTHONUNBUFFERED=1
-export PYTHONPATH=/home/site/wwwroot
+export PYTHONPATH=/home/site/wwwroot:/home/site/wwwroot/src
+
+# Print environment information
+echo "Environment information:"
+echo "Python version: $(python --version)"
+echo "Pip version: $(pip --version)"
+echo "Working directory: $(pwd)"
+echo "Directory contents: $(ls -la)"
+echo "Python path: $PYTHONPATH"
 
 # Start the application with memory optimization
+echo "Starting application..."
+cd /home/site/wwwroot
 gunicorn --bind=0.0.0.0:$PORT \
          --timeout 600 \
          --workers 2 \

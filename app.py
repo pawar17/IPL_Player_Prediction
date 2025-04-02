@@ -4,14 +4,21 @@ import json
 from pathlib import Path
 from datetime import datetime
 import pandas as pd
-from data_collector import DataCollector
-from data_processor import DataProcessor
+from src.data_collection.data_collector import DataCollector
+from src.data_collection.data_processor import DataProcessor
 from src.predict_player_performance import predict_player_performance
 import os
 from logging_config import logger
 
+# Initialize Flask app
 app = Flask(__name__, static_folder='static')
-CORS(app)  # Enable CORS for all routes
+CORS(app)
+
+# Log startup information
+logger.info("Starting application...")
+logger.info(f"Environment: {os.environ.get('FLASK_ENV', 'production')}")
+logger.info(f"Working directory: {os.getcwd()}")
+logger.info(f"Directory contents: {os.listdir('.')}")
 
 # Initialize data collector and processor
 try:
@@ -125,10 +132,15 @@ def get_players():
 @app.route('/api/health')
 def health_check():
     """Check API health"""
-    return jsonify({
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    })
+    try:
+        return jsonify({
+            "status": "healthy",
+            "timestamp": datetime.utcnow().isoformat(),
+            "environment": os.environ.get('FLASK_ENV', 'production')
+        })
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        return jsonify({"status": "unhealthy", "error": str(e)}), 500
 
 # Serve React App
 @app.route('/', defaults={'path': ''})
