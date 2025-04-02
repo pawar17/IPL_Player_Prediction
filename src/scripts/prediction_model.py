@@ -1,14 +1,23 @@
-import pandas as pd
-import numpy as np
+import os
+import sys
 from pathlib import Path
+
+# Add project root directory to Python path
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
+import numpy as np
+import pandas as pd
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 import json
 from datetime import datetime, timedelta
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
+import joblib
 
 # Configure logging
 logging.basicConfig(
@@ -17,17 +26,53 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Import IPL 2025 data
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from data_collection.ipl_2025_data import schedule, teams
+except ImportError as e:
+    logging.error(f"Error importing IPL 2025 data: {str(e)}")
+    schedule = []
+    teams = []
+
 class MLPredictor:
     def __init__(self):
-        self.data_dir = Path("data")
-        self.historical_dir = self.data_dir / "historical"
-        self.output_dir = self.data_dir / "predictions"
-        self.output_dir.mkdir(exist_ok=True)
+        self.logger = logging.getLogger(__name__)
+        self.base_path = Path(__file__).parent.parent.parent
+        self.data_dir = self.base_path / 'data'
+        self.historical_dir = self.data_dir / 'historical'
+        self.models_dir = self.base_path / 'models'
+        self.models_dir.mkdir(parents=True, exist_ok=True)
         
-        # Initialize ML models
-        self.batting_model = RandomForestRegressor(n_estimators=100, random_state=42)
-        self.bowling_model = RandomForestRegressor(n_estimators=100, random_state=42)
+        # Initialize models
+        self.batting_model = RandomForestRegressor(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            random_state=42
+        )
+        
+        self.bowling_model = RandomForestRegressor(
+            n_estimators=100,
+            max_depth=10,
+            min_samples_split=5,
+            min_samples_leaf=2,
+            random_state=42
+        )
+        
         self.scaler = StandardScaler()
+        
+        # Try to load pre-trained models
+        try:
+            if (self.models_dir / 'batting_model.joblib').exists():
+                self.batting_model = joblib.load(self.models_dir / 'batting_model.joblib')
+                self.bowling_model = joblib.load(self.models_dir / 'bowling_model.joblib')
+                self.scaler = joblib.load(self.models_dir / 'scaler.joblib')
+                self.logger.info("Loaded pre-trained models")
+        except Exception as e:
+            self.logger.warning(f"Could not load pre-trained models: {str(e)}")
+            # Models will be trained when needed
         
         # Load and prepare data
         self.prepare_ml_data()
@@ -360,6 +405,93 @@ class MLPredictor:
             logger.error(f"Error getting recent matches: {str(e)}")
             return []
 
+    def predict(self, features: Dict[str, Any]) -> Dict[str, float]:
+        """Make predictions for a player's performance"""
+        try:
+            # Prepare features
+            feature_vector = self._prepare_feature_vector(features)
+            
+            if self.scaler is None:
+                self.scaler = StandardScaler()
+                # Since we don't have training data, use a simple standardization
+                feature_vector = (feature_vector - np.mean(feature_vector)) / np.std(feature_vector)
+            else:
+                feature_vector = self.scaler.transform(feature_vector.reshape(1, -1))
+            
+            # Make predictions
+            runs_pred = self.batting_model.predict(feature_vector)[0] if self.batting_model else 0
+            wickets_pred = self.bowling_model.predict(feature_vector)[0] if self.bowling_model else 0
+            
+            # Calculate confidence based on historical data and recent form
+            confidence = self._calculate_confidence(features)
+            
+            return {
+                'runs': max(0, runs_pred),
+                'wickets': max(0, wickets_pred),
+                'confidence': confidence
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error making prediction: {str(e)}")
+            return {
+                'runs': 0,
+                'wickets': 0,
+                'confidence': 0
+            }
+    
+    def _prepare_feature_vector(self, features: Dict[str, Any]) -> np.ndarray:
+        """Prepare feature vector for prediction"""
+        try:
+            # Extract historical stats
+            hist = features.get('historical_stats', {})
+            recent = features.get('recent_stats', {})
+            current = features.get('current_stats', {})
+            
+            # Create feature vector
+            feature_vector = np.array([
+                recent.get('avg_runs', 0),                    # last_5_matches_runs_avg
+                recent.get('avg_wickets', 0),                 # last_5_matches_wickets_avg
+                recent.get('strike_rate', 0),                 # last_5_matches_sr_avg
+                recent.get('economy_rate', 0),               # last_5_matches_er_avg
+                hist.get('avg_runs', 0),                     # career_runs_avg
+                hist.get('avg_wickets', 0),                  # career_wickets_avg
+                hist.get('avg_strike_rate', 0),              # career_sr_avg
+                hist.get('avg_economy_rate', 0),             # career_er_avg
+                recent.get('form', 0.5),                     # form_factor
+                current.get('consistency', 0.5),             # consistency_score
+                1 if features.get('is_home_game', False) else 0  # is_home_match
+            ])
+            
+            return feature_vector.reshape(1, -1)
+            
+        except Exception as e:
+            self.logger.error(f"Error preparing feature vector: {str(e)}")
+            # Return zero vector with correct shape
+            return np.zeros((1, 11))
+    
+    def _calculate_confidence(self, features: Dict[str, Any]) -> float:
+        """Calculate prediction confidence score"""
+        try:
+            # Get relevant statistics
+            hist = features.get('historical_stats', {})
+            recent = features.get('recent_stats', {})
+            
+            # Factors affecting confidence
+            factors = [
+                min(1.0, hist.get('total_matches', 0) / 50),  # More matches = higher confidence
+                recent.get('form', 0.5),                      # Better form = higher confidence
+                0.8 if features.get('is_home_game') else 0.6  # Home game advantage
+            ]
+            
+            # Calculate weighted average
+            confidence = sum(factors) / len(factors)
+            
+            return max(0.1, min(1.0, confidence))
+            
+        except Exception as e:
+            self.logger.error(f"Error calculating confidence: {str(e)}")
+            return 0.1  # Return minimum confidence on error
+
     def predict_player_performance(self, player_id: str, player_data: pd.Series, 
                                  opponent_team: str, historical_data: pd.DataFrame) -> Dict:
         """Predict player performance using ML models."""
@@ -483,45 +615,293 @@ class MLPredictor:
             logger.error(f"Error getting match predictions: {str(e)}")
             return None
 
-def main():
-    predictor = MLPredictor()
-    
-    # Example usage
-    match = {
-        'match_id': 'test_match',
-        'team1': 'Mumbai Indians',
-        'team2': 'Chennai Super Kings',
-        'date': '2024-03-20',
-        'venue': 'Wankhede Stadium'
-    }
-    
-    predictions = predictor.get_match_predictions(match)
-    if predictions:
-        print("\nMatch Predictions:")
-        print("=" * 50)
-        print(f"Match: {predictions['match']['team1']} vs {predictions['match']['team2']}")
-        print(f"Date: {predictions['match']['date']}")
-        print(f"Venue: {predictions['match']['venue']}")
+    def get_comprehensive_match_prediction(self, match_id: int) -> Dict[str, Any]:
+        """
+        Get comprehensive predictions for all players in both teams for a specific match,
+        combining historical data, recent performance, and current roster information.
         
-        print("\nTeam 1 Predictions:")
-        for pred in predictions['team1']['predictions']:
-            print(f"\n{pred['name']}:")
-            print(f"Predicted: {pred['predicted_runs']} runs, {pred['predicted_wickets']} wickets")
-            print(f"Confidence: {pred['confidence']}")
+        Args:
+            match_id: ID of the match to predict
             
-            print("\nRecent Matches:")
+        Returns:
+            Dictionary containing predictions for all players in both teams
+        """
+        try:
+            # Load all data
+            all_matches, current_matches, latest_matches, ipl_website_data, player_stats = self.load_all_data()
+            
+            # Get match data from current matches or schedule
+            match_data = None
+            if not current_matches.empty and match_id in current_matches['match_id'].values:
+                match_data = current_matches[current_matches['match_id'] == match_id].iloc[0]
+            else:
+                # Try to get from IPL 2025 schedule
+                try:
+                    from src.data_collection.ipl_2025_data import schedule, teams as teams_data
+                except ImportError:
+                    self.logger.error("Could not import IPL 2025 data. Please check the data files.")
+                    return {}
+                
+                if not schedule:
+                    self.logger.error("IPL 2025 schedule is empty")
+                    return {}
+                    
+                match_data = next((m for m in schedule if m.get('match_id') == match_id), None)
+            
+            if match_data is None:
+                self.logger.error(f"Match {match_id} not found in current matches or schedule")
+                return {}
+            
+            # Get team names
+            team1 = match_data.get('team1') if isinstance(match_data, dict) else match_data['team1']
+            team2 = match_data.get('team2') if isinstance(match_data, dict) else match_data['team2']
+            
+            # Get team rosters
+            if 'teams_data' not in locals():
+                try:
+                    from src.data_collection.ipl_2025_data import teams as teams_data
+                except ImportError:
+                    self.logger.error("Could not import IPL 2025 teams data")
+                    return {}
+            
+            if not teams_data:
+                self.logger.error("IPL 2025 teams data is empty")
+                return {}
+            
+            team1_data = next((t for t in teams_data if t['name'] == team1), None)
+            team2_data = next((t for t in teams_data if t['name'] == team2), None)
+            
+            if not team1_data or not team2_data:
+                self.logger.error(f"Could not find roster data for {team1} or {team2}")
+                return {}
+            
+            # Initialize predictions dictionary
+            predictions = {
+                'match_id': match_id,
+                'date': match_data.get('date') if isinstance(match_data, dict) else match_data['date'],
+                'venue': match_data.get('venue') if isinstance(match_data, dict) else match_data['venue'],
+                'team1': {
+                    'name': team1,
+                    'players': []
+                },
+                'team2': {
+                    'name': team2,
+                    'players': []
+                }
+            }
+            
+            # Process each team
+            for team_data, team_key in [(team1_data, 'team1'), (team2_data, 'team2')]:
+                for player in team_data['players']:
+                    player_name = player['name']
+                    
+                    # Get historical performance
+                    historical_perf = all_matches[all_matches['player_name'] == player_name] if not all_matches.empty else pd.DataFrame()
+                    
+                    if not historical_perf.empty:
+                        historical_stats = {
+                            'total_matches': len(historical_perf),
+                            'avg_runs': historical_perf['runs'].mean(),
+                            'avg_wickets': historical_perf['wickets'].mean(),
+                            'avg_strike_rate': historical_perf['strike_rate'].mean(),
+                            'avg_economy_rate': historical_perf['economy_rate'].mean(),
+                            'best_runs': historical_perf['runs'].max(),
+                            'best_wickets': historical_perf['wickets'].max()
+                        }
+                    else:
+                        historical_stats = {
+                            'total_matches': 0,
+                            'avg_runs': 0,
+                            'avg_wickets': 0,
+                            'avg_strike_rate': 0,
+                            'avg_economy_rate': 0,
+                            'best_runs': 0,
+                            'best_wickets': 0
+                        }
+                    
+                    # Get recent performance (last 5 matches)
+                    recent_matches = player.get('recent_matches', [])[:5]  # Ensure only last 5 matches
+                    recent_stats = {
+                        'matches_played': len(recent_matches),
+                        'total_runs': sum(m.get('runs', 0) for m in recent_matches),
+                        'total_wickets': sum(m.get('wickets', 0) for m in recent_matches),
+                        'avg_runs': sum(m.get('runs', 0) for m in recent_matches) / max(1, len(recent_matches)),
+                        'avg_wickets': sum(m.get('wickets', 0) for m in recent_matches) / max(1, len(recent_matches)),
+                        'form': player.get('recent_stats', {}).get('form', 0.5)
+                    }
+                    
+                    # Get current stats from roster
+                    current_stats = player.get('recent_stats', {})
+                    
+                    # Prepare features for prediction
+                    features = {
+                        'player_name': player_name,
+                        'team': team_data['name'],
+                        'role': player.get('role', 'Unknown'),
+                        'historical_stats': historical_stats,
+                        'recent_stats': recent_stats,
+                        'current_stats': current_stats,
+                        'is_home_game': team_key == 'team1',  # Assuming team1 is home team
+                        'opponent': team2 if team_key == 'team1' else team1,
+                        'venue': predictions['venue']
+                    }
+                    
+                    # Make prediction
+                    prediction = self.predict(features)
+                    
+                    # Add player prediction to results
+                    player_prediction = {
+                        'name': player_name,
+                        'role': player.get('role', 'Unknown'),
+                        'historical_performance': historical_stats,
+                        'recent_performance': recent_stats,
+                        'current_form': current_stats,
+                        'prediction': prediction
+                    }
+                    
+                    predictions[team_key]['players'].append(player_prediction)
+            
+            return predictions
+            
+        except Exception as e:
+            self.logger.error(f"Error getting comprehensive match prediction: {str(e)}")
+            return {}
+
+    def train_models(self):
+        """Train the batting and bowling models using historical data"""
+        try:
+            # Load all data
+            all_matches, current_matches, latest_matches, ipl_website_data, player_stats = self.load_all_data()
+            
+            if all_matches.empty:
+                self.logger.error("No historical data available for training")
+                return
+            
+            # Prepare features and targets
+            features = [
+                'last_5_matches_runs_avg', 'last_5_matches_wickets_avg',
+                'last_5_matches_sr_avg', 'last_5_matches_er_avg',
+                'career_runs_avg', 'career_wickets_avg',
+                'career_sr_avg', 'career_er_avg',
+                'form_factor', 'consistency_score',
+                'is_home_match'
+            ]
+            
+            # Check if all required features are present
+            missing_features = [f for f in features if f not in all_matches.columns]
+            if missing_features:
+                self.logger.error(f"Missing required features: {missing_features}")
+                # Add missing features with default values
+                for feature in missing_features:
+                    all_matches[feature] = 0.0
+            
+            X = all_matches[features].fillna(0)
+            y_batting = all_matches['runs'].fillna(0)
+            y_bowling = all_matches['wickets'].fillna(0)
+            
+            # Initialize and fit scaler
+            self.scaler = StandardScaler()
+            X_scaled = self.scaler.fit_transform(X)
+            
+            # Train batting model
+            self.batting_model.fit(X_scaled, y_batting)
+            
+            # Train bowling model
+            self.bowling_model.fit(X_scaled, y_bowling)
+            
+            # Calculate and log metrics
+            batting_pred = self.batting_model.predict(X_scaled)
+            bowling_pred = self.bowling_model.predict(X_scaled)
+            
+            batting_mse = mean_squared_error(y_batting, batting_pred)
+            batting_r2 = r2_score(y_batting, batting_pred)
+            bowling_mse = mean_squared_error(y_bowling, bowling_pred)
+            bowling_r2 = r2_score(y_bowling, bowling_pred)
+            
+            self.logger.info(f"Batting Model - MSE: {batting_mse:.2f}, R2: {batting_r2:.2f}")
+            self.logger.info(f"Bowling Model - MSE: {bowling_mse:.2f}, R2: {bowling_r2:.2f}")
+            
+            # Save models
+            joblib.dump(self.batting_model, self.models_dir / 'batting_model.joblib')
+            joblib.dump(self.bowling_model, self.models_dir / 'bowling_model.joblib')
+            joblib.dump(self.scaler, self.models_dir / 'scaler.joblib')
+            
+        except Exception as e:
+            self.logger.error(f"Error training models: {str(e)}")
+            raise  # Re-raise the exception for debugging
+
+def main():
+    try:
+        predictor = MLPredictor()
+        
+        # Train models if needed
+        predictor.train_models()
+        
+        # Get comprehensive predictions for a specific match
+        match_id = 1  # You can change this to any match ID you want to predict
+        predictions = predictor.get_comprehensive_match_prediction(match_id)
+        
+        if not predictions:
+            print("\nNo predictions available. Please check the logs for errors.")
+            return
+        
+        # Print predictions in a readable format
+        print("\nComprehensive Match Predictions:")
+        print("=" * 50)
+        
+        if 'team1' not in predictions or 'team2' not in predictions:
+            print("Error: Invalid prediction format")
+            return
+            
+        print(f"Match: {predictions['team1']['name']} vs {predictions['team2']['name']}")
+        print(f"Date: {predictions.get('date', 'N/A')}")
+        print(f"Venue: {predictions.get('venue', 'N/A')}\n")
+        
+        # Print predictions for each team
+        for team_key in ['team1', 'team2']:
+            team = predictions[team_key]
+            print(f"\n{team['name']} Predictions:")
             print("-" * 30)
-            for i, match in enumerate(pred['recent_matches'], 1):
-                print(f"Match {i}:")
-                print(f"  Runs: {match.get('runs', 'N/A')}")
-                print(f"  Wickets: {match.get('wickets', 'N/A')}")
-                print(f"  Strike Rate: {match.get('strike_rate', 'N/A')}")
-                print(f"  Economy Rate: {match.get('economy_rate', 'N/A')}")
             
-            print("\nPerformance Factors:")
-            for factor, value in pred['factors'].items():
-                print(f"  {factor}: {value}")
-            print("-" * 50)
+            if not team.get('players'):
+                print("No player predictions available")
+                continue
+            
+            for player in team['players']:
+                print(f"\n{player['name']} ({player.get('role', 'Unknown')}):")
+                
+                prediction = player.get('prediction', {})
+                print(f"Predicted: {prediction.get('runs', 0):.1f} runs, {prediction.get('wickets', 0):.1f} wickets")
+                print(f"Confidence: {prediction.get('confidence', 0):.2f}")
+                
+                hist = player.get('historical_performance', {})
+                if hist:
+                    print("\nHistorical Performance:")
+                    print(f"  Total Matches: {hist.get('total_matches', 0)}")
+                    print(f"  Average Runs: {hist.get('avg_runs', 0):.1f}")
+                    print(f"  Average Wickets: {hist.get('avg_wickets', 0):.1f}")
+                    print(f"  Best Runs: {hist.get('best_runs', 0)}")
+                    print(f"  Best Wickets: {hist.get('best_wickets', 0)}")
+                
+                recent = player.get('recent_performance', {})
+                if recent:
+                    print("\nRecent Performance (Last 5 matches):")
+                    print(f"  Matches Played: {recent.get('matches_played', 0)}")
+                    print(f"  Average Runs: {recent.get('avg_runs', 0):.1f}")
+                    print(f"  Average Wickets: {recent.get('avg_wickets', 0):.1f}")
+                    print(f"  Form: {recent.get('form', 0):.2f}")
+                
+                current = player.get('current_form', {})
+                if current:
+                    print("\nCurrent Form:")
+                    for stat, value in current.items():
+                        print(f"  {stat}: {value}")
+                
+                print("-" * 50)
+    
+    except Exception as e:
+        print(f"\nError: {str(e)}")
+        logging.error(f"Error in main: {str(e)}", exc_info=True)
 
 if __name__ == "__main__":
     main() 
