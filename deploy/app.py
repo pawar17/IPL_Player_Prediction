@@ -8,19 +8,13 @@ from data_collector import DataCollector
 from data_processor import DataProcessor
 from src.predict_player_performance import predict_player_performance
 import os
-from logging_config import logger
 
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
 
 # Initialize data collector and processor
-try:
-    collector = DataCollector()
-    processor = DataProcessor()
-    logger.info("Successfully initialized DataCollector and DataProcessor")
-except Exception as e:
-    logger.error(f"Failed to initialize data components: {str(e)}")
-    raise
+collector = DataCollector()
+processor = DataProcessor()
 
 def load_ipl_matches():
     """Load IPL 2025 matches from the data file"""
@@ -29,10 +23,9 @@ def load_ipl_matches():
             content = f.read()
             # Extract matches data from the file
             matches = eval(content.split('matches = ')[1].split('\n')[0])
-            logger.info(f"Successfully loaded {len(matches)} matches")
             return matches
     except Exception as e:
-        logger.error(f"Error loading matches: {str(e)}")
+        print(f"Error loading matches: {e}")
         return []
 
 @app.route('/api/matches')
@@ -140,15 +133,8 @@ def serve(path):
         return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
-    try:
-        # Create necessary directories
-        Path('data').mkdir(exist_ok=True)
-        logger.info("Created data directory")
-        
-        # Run the Flask app
-        port = int(os.environ.get('PORT', 5000))
-        logger.info(f"Starting Flask application on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=False)
-    except Exception as e:
-        logger.error(f"Failed to start application: {str(e)}")
-        raise 
+    # Create necessary directories
+    Path('data').mkdir(exist_ok=True)
+    
+    # Run the Flask app
+    app.run(host='0.0.0.0', port=5000, debug=True) 
