@@ -1,5 +1,9 @@
 [config]
 SCM_DO_BUILD_DURING_DEPLOYMENT=true
+SCM_USE_GIT=true
+SCM_REPOSITORY_PATH=/home/site/repository
+SCM_TARGET_PATH=/home/site/wwwroot
+SCM_COMMAND=./startup.sh
 WEBSITE_RUN_FROM_PACKAGE=1
 
 [deployment]

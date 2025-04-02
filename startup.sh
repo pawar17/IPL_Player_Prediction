@@ -13,9 +13,19 @@ mkdir -p /home/site/wwwroot/static
 echo "Upgrading pip..."
 python -m pip install --upgrade pip
 
-# Install dependencies with memory optimization
+# Install dependencies with memory optimization and error handling
 echo "Installing dependencies..."
-pip install --no-cache-dir -r requirements.txt --verbose
+pip install --no-cache-dir -r requirements.txt --verbose || {
+    echo "Failed to install dependencies"
+    exit 1
+}
+
+# Verify critical packages are installed
+echo "Verifying critical packages..."
+python -c "import flask; import flask_cors; import gunicorn" || {
+    echo "Critical packages not installed correctly"
+    exit 1
+}
 
 # Build React app if frontend directory exists
 if [ -d "frontend" ]; then
@@ -24,7 +34,10 @@ if [ -d "frontend" ]; then
     
     # Install npm dependencies
     echo "Installing npm dependencies..."
-    npm install --legacy-peer-deps
+    npm install --legacy-peer-deps || {
+        echo "Failed to install npm dependencies"
+        exit 1
+    }
     
     # Set production environment variables
     echo "Setting production environment variables..."
@@ -33,7 +46,10 @@ if [ -d "frontend" ]; then
     
     # Build the app
     echo "Building React app..."
-    npm run build
+    npm run build || {
+        echo "Failed to build React app"
+        exit 1
+    }
     
     # Verify build output
     echo "Verifying build output..."
@@ -45,7 +61,10 @@ if [ -d "frontend" ]; then
     # Copy built files to static directory
     echo "Copying built files to static directory..."
     rm -rf /home/site/wwwroot/static/*
-    cp -r build/* /home/site/wwwroot/static/
+    cp -r build/* /home/site/wwwroot/static/ || {
+        echo "Failed to copy static files"
+        exit 1
+    }
     
     # Verify static files
     echo "Verifying static files..."
@@ -70,6 +89,7 @@ echo "Working directory: $(pwd)"
 echo "Directory contents: $(ls -la)"
 echo "Python path: $PYTHONPATH"
 echo "Static folder contents: $(ls -la /home/site/wwwroot/static/)"
+echo "Installed packages: $(pip list)"
 
 # Run deployment verification
 echo "Running deployment verification..."
