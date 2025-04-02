@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use relative path for API calls
+const API_BASE_URL = '/api';
 
 export const api = {
     // Get all matches
