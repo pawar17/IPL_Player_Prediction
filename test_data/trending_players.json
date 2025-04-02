@@ -1,0 +1,68 @@
+{
+  "timestamp": "2025-04-02T02:42:33.595105",
+  "data": {
+    "player": [
+      {
+        "id": "14254",
+        "name": "Prabhsimran Singh",
+        "teamName": "India",
+        "faceImageId": 226515
+      },
+      {
+        "id": "11684",
+        "name": "Ashwani Kumar",
+        "teamName": "India",
+        "faceImageId": 182026
+      },
+      {
+        "id": "9204",
+        "name": "Nitish Rana",
+        "teamName": "India",
+        "faceImageId": 171047
+      },
+      {
+        "id": "7710",
+        "name": "Mitchell Starc",
+        "teamName": "Australia",
+        "faceImageId": 352462
+      },
+      {
+        "id": "10551",
+        "name": "Prasidh Krishna",
+        "teamName": "India",
+        "faceImageId": 591958
+      },
+      {
+        "id": "13565",
+        "name": "Navneet Dhaliwal",
+        "teamName": "Canada",
+        "faceImageId": 182026
+      },
+      {
+        "id": "9976",
+        "name": "Mark Chapman",
+        "teamName": "New Zealand",
+        "faceImageId": 616435
+      },
+      {
+        "id": "10636",
+        "name": "Rajat Patidar",
+        "teamName": "India",
+        "faceImageId": 234983
+      },
+      {
+        "id": "8683",
+        "name": "Shardul Thakur",
+        "teamName": "India",
+        "faceImageId": 352487
+      },
+      {
+        "id": "8520",
+        "name": "Quinton de Kock",
+        "teamName": "South Africa",
+        "faceImageId": 594326
+      }
+    ],
+    "category": "TRENDING SEARCHES"
+  }
+}

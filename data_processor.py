@@ -15,387 +15,397 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DataProcessor:
-    def __init__(self):
+    def __init__(self, data_dir: str = "data"):
+        self.data_dir = Path(data_dir)
         self.historical_data = None
-        self.player_stats = None
+        self.player_stats = {}
         self.load_data()
 
     def load_data(self):
         """Load historical data and player statistics"""
         try:
-            if HISTORICAL_DATA_FILE.exists():
-                self.historical_data = pd.read_csv(HISTORICAL_DATA_FILE)
-                logger.info(f"Loaded {len(self.historical_data)} historical matches")
+            # Load historical matches
+            historical_file = self.data_dir / "historical_matches.csv"
+            if historical_file.exists():
+                self.historical_data = pd.read_csv(historical_file)
+                logger.info(f"Loaded historical data with {len(self.historical_data)} matches")
             else:
-                self.historical_data = pd.DataFrame()
-                logger.warning("No historical data found")
+                logger.warning("Historical data file not found")
 
-            if PLAYER_STATS_FILE.exists():
-                self.player_stats = pd.read_csv(PLAYER_STATS_FILE)
+            # Load player statistics
+            player_stats_file = self.data_dir / "player_stats.json"
+            if player_stats_file.exists():
+                with open(player_stats_file, 'r') as f:
+                    self.player_stats = json.load(f)
                 logger.info(f"Loaded player statistics for {len(self.player_stats)} players")
             else:
-                self.player_stats = pd.DataFrame()
-                logger.warning("No player statistics found")
+                logger.warning("Player statistics file not found")
         except Exception as e:
             logger.error(f"Error loading data: {e}")
-            self.historical_data = pd.DataFrame()
-            self.player_stats = pd.DataFrame()
 
     def process_match_data(self, match_data: Dict) -> Dict:
         """Process and enrich match data with additional metrics"""
         try:
-            processed_match = match_data.copy()
-            
-            # Add match importance
-            processed_match['match_importance'] = self._calculate_match_importance(match_data)
-            
-            # Add pressure index
-            processed_match['pressure_index'] = self._calculate_pressure_index(match_data)
-            
-            # Add venue factors
-            processed_match['venue_factors'] = self._get_venue_factors(match_data)
-            
-            # Add team form
-            processed_match['team1_form'] = self._calculate_team_form(match_data['team1'])
-            processed_match['team2_form'] = self._calculate_team_form(match_data['team2'])
-            
-            # Add head-to-head statistics
-            processed_match['head_to_head'] = self._get_head_to_head_stats(
-                match_data['team1'], match_data['team2']
-            )
-            
-            return processed_match
+            processed_data = {
+                'match_id': match_data.get('match_id'),
+                'date': match_data.get('date'),
+                'venue': match_data.get('venue'),
+                'team1': match_data.get('team1'),
+                'team2': match_data.get('team2'),
+                'status': match_data.get('status'),
+                'score': match_data.get('score'),
+                'match_importance': self._calculate_match_importance(match_data),
+                'pressure_index': self._calculate_pressure_index(match_data),
+                'venue_factors': self._get_venue_factors(match_data.get('venue')),
+                'team_form': self._calculate_team_form(match_data),
+                'head_to_head': self._get_head_to_head_stats(match_data),
+                'players': self._process_players(match_data.get('players', []))
+            }
+            return processed_data
         except Exception as e:
             logger.error(f"Error processing match data: {e}")
-            return match_data
-
-    def process_player_data(self, player_data: Dict) -> Dict:
-        """Process and enrich player data with additional metrics"""
-        try:
-            processed_player = player_data.copy()
-            
-            # Calculate form metrics
-            processed_player['form_metrics'] = self._calculate_player_form(player_data)
-            
-            # Add role-specific metrics
-            processed_player['role_metrics'] = self._calculate_role_metrics(player_data)
-            
-            # Add performance consistency
-            processed_player['consistency_score'] = self._calculate_consistency_score(player_data)
-            
-            # Add pressure handling metrics
-            processed_player['pressure_metrics'] = self._calculate_pressure_metrics(player_data)
-            
-            return processed_player
-        except Exception as e:
-            logger.error(f"Error processing player data: {e}")
-            return player_data
+            return {}
 
     def _calculate_match_importance(self, match_data: Dict) -> float:
-        """Calculate match importance based on various factors"""
-        importance = 0.5  # Base importance
-        
-        # Adjust based on match stage
-        if match_data.get('stage') in ['playoff', 'semi_final', 'final']:
-            importance += 0.3
-        
-        # Adjust based on team positions
-        if match_data.get('team1_position') and match_data.get('team2_position'):
-            position_diff = abs(match_data['team1_position'] - match_data['team2_position'])
-            if position_diff <= 2:
-                importance += 0.2
-        
-        return min(importance, 1.0)
+        """Calculate match importance based on tournament stage and context"""
+        try:
+            importance = 1.0
+            status = match_data.get('status', '').lower()
+            
+            if 'final' in status:
+                importance = 4.0
+            elif 'semi' in status:
+                importance = 3.0
+            elif 'playoff' in status:
+                importance = 2.0
+            
+            return importance
+        except Exception as e:
+            logger.error(f"Error calculating match importance: {e}")
+            return 1.0
 
     def _calculate_pressure_index(self, match_data: Dict) -> float:
-        """Calculate pressure index based on various factors"""
-        pressure = 0.5  # Base pressure
-        
-        # Adjust based on match stage
-        if match_data.get('stage') == 'final':
-            pressure += 0.3
-        elif match_data.get('stage') == 'semi_final':
-            pressure += 0.2
-        elif match_data.get('stage') == 'playoff':
-            pressure += 0.1
-        
-        # Adjust based on team positions
-        if match_data.get('team1_position') and match_data.get('team2_position'):
-            position_diff = abs(match_data['team1_position'] - match_data['team2_position'])
-            if position_diff <= 2:
-                pressure += 0.2
-        
-        return min(pressure, 1.0)
-
-    def _get_venue_factors(self, match_data: Dict) -> Dict:
-        """Get venue-specific factors"""
-        venue = match_data.get('venue', '')
-        factors = {
-            'home_advantage': 1.0,
-            'pitch_type': 'unknown',
-            'weather_conditions': 'unknown',
-            'historical_scoring_rate': 0.0
-        }
-        
-        # Check if venue is home ground for either team
-        for team_name, team_info in TEAMS.items():
-            if venue == team_info['home_ground']:
-                if match_data.get('team1') == team_name:
-                    factors['home_advantage'] = 1.2
-                elif match_data.get('team2') == team_name:
-                    factors['home_advantage'] = 0.8
-        
-        return factors
-
-    def _calculate_team_form(self, team_name: str) -> Dict:
-        """Calculate team form based on recent matches"""
-        if self.historical_data.empty:
-            return {'recent_wins': 0, 'win_rate': 0.5, 'momentum': 0.5}
-        
-        # Get recent matches for the team
-        recent_matches = self.historical_data[
-            (self.historical_data['team1'] == team_name) |
-            (self.historical_data['team2'] == team_name)
-        ].tail(5)
-        
-        if recent_matches.empty:
-            return {'recent_wins': 0, 'win_rate': 0.5, 'momentum': 0.5}
-        
-        # Calculate form metrics
-        wins = sum(
-            (recent_matches['team1'] == team_name) & (recent_matches['winner'] == team_name) |
-            (recent_matches['team2'] == team_name) & (recent_matches['winner'] == team_name)
-        )
-        
-        win_rate = wins / len(recent_matches)
-        momentum = (wins / len(recent_matches)) * 0.8 + 0.2  # Add some base momentum
-        
-        return {
-            'recent_wins': wins,
-            'win_rate': win_rate,
-            'momentum': momentum
-        }
-
-    def _get_head_to_head_stats(self, team1: str, team2: str) -> Dict:
-        """Get head-to-head statistics between two teams"""
-        if self.historical_data.empty:
-            return {'total_matches': 0, 'team1_wins': 0, 'team2_wins': 0, 'win_rate': 0.5}
-        
-        # Get head-to-head matches
-        h2h_matches = self.historical_data[
-            ((self.historical_data['team1'] == team1) & (self.historical_data['team2'] == team2)) |
-            ((self.historical_data['team1'] == team2) & (self.historical_data['team2'] == team1))
-        ]
-        
-        if h2h_matches.empty:
-            return {'total_matches': 0, 'team1_wins': 0, 'team2_wins': 0, 'win_rate': 0.5}
-        
-        # Calculate head-to-head statistics
-        team1_wins = sum(h2h_matches['winner'] == team1)
-        team2_wins = sum(h2h_matches['winner'] == team2)
-        total_matches = len(h2h_matches)
-        
-        return {
-            'total_matches': total_matches,
-            'team1_wins': team1_wins,
-            'team2_wins': team2_wins,
-            'win_rate': team1_wins / total_matches if total_matches > 0 else 0.5
-        }
-
-    def _calculate_player_form(self, player_data: Dict) -> Dict:
-        """Calculate player form based on recent performances"""
-        if self.player_stats.empty:
-            return {'recent_performance': 0.5, 'consistency': 0.5, 'momentum': 0.5}
-        
-        # Get recent performances for the player
-        player_id = player_data.get('id')
-        recent_stats = self.player_stats[
-            self.player_stats['player_id'] == player_id
-        ].tail(5)
-        
-        if recent_stats.empty:
-            return {'recent_performance': 0.5, 'consistency': 0.5, 'momentum': 0.5}
-        
-        # Calculate form metrics
-        recent_performance = recent_stats['performance_score'].mean()
-        consistency = 1 - recent_stats['performance_score'].std()
-        momentum = recent_stats['performance_score'].pct_change().mean() + 0.5
-        
-        return {
-            'recent_performance': recent_performance,
-            'consistency': consistency,
-            'momentum': momentum
-        }
-
-    def _calculate_role_metrics(self, player_data: Dict) -> Dict:
-        """Calculate role-specific metrics for the player"""
-        role = player_data.get('role', '')
-        metrics = {
-            'role_specific_score': 0.5,
-            'role_consistency': 0.5,
-            'role_impact': 0.5
-        }
-        
-        if role not in PLAYER_ROLES:
-            return metrics
-        
-        # Calculate role-specific metrics based on player's role
-        if role == 'Batsman':
-            metrics['role_specific_score'] = self._calculate_batting_metrics(player_data)
-        elif role == 'Bowler':
-            metrics['role_specific_score'] = self._calculate_bowling_metrics(player_data)
-        elif role == 'All-Rounder':
-            metrics['role_specific_score'] = (
-                self._calculate_batting_metrics(player_data) * 0.5 +
-                self._calculate_bowling_metrics(player_data) * 0.5
-            )
-        
-        return metrics
-
-    def _calculate_batting_metrics(self, player_data: Dict) -> float:
-        """Calculate batting-specific metrics"""
-        if not player_data.get('recent_stats'):
-            return 0.5
-        
-        stats = player_data['recent_stats']
-        runs = stats.get('runs', 0)
-        strike_rate = stats.get('strike_rate', 100)
-        
-        # Normalize metrics
-        runs_score = min(runs / 100, 1.0)  # Cap at 100 runs
-        strike_rate_score = min(strike_rate / 200, 1.0)  # Cap at 200 strike rate
-        
-        return (runs_score * 0.7 + strike_rate_score * 0.3)
-
-    def _calculate_bowling_metrics(self, player_data: Dict) -> float:
-        """Calculate bowling-specific metrics"""
-        if not player_data.get('recent_stats'):
-            return 0.5
-        
-        stats = player_data['recent_stats']
-        wickets = stats.get('wickets', 0)
-        economy_rate = stats.get('economy_rate', 10)
-        
-        # Normalize metrics
-        wickets_score = min(wickets / 5, 1.0)  # Cap at 5 wickets
-        economy_score = max(1 - (economy_rate / 20), 0)  # Lower is better
-        
-        return (wickets_score * 0.7 + economy_score * 0.3)
-
-    def _calculate_consistency_score(self, player_data: Dict) -> float:
-        """Calculate player's consistency score"""
-        if not player_data.get('recent_stats'):
-            return 0.5
-        
-        stats = player_data['recent_stats']
-        performances = []
-        
-        # Combine relevant statistics based on player role
-        role = player_data.get('role', '')
-        if role == 'Batsman':
-            performances = [stats.get('runs', 0) / 100]  # Normalize runs
-        elif role == 'Bowler':
-            performances = [stats.get('wickets', 0) / 5]  # Normalize wickets
-        elif role == 'All-Rounder':
-            performances = [
-                stats.get('runs', 0) / 100,
-                stats.get('wickets', 0) / 5
-            ]
-        
-        if not performances:
-            return 0.5
-        
-        # Calculate consistency (inverse of standard deviation)
-        consistency = 1 - np.std(performances)
-        return max(min(consistency, 1.0), 0.0)
-
-    def _calculate_pressure_metrics(self, player_data: Dict) -> Dict:
-        """Calculate player's performance under pressure"""
-        if not player_data.get('recent_stats'):
-            return {'pressure_handling': 0.5, 'clutch_performance': 0.5}
-        
-        stats = player_data['recent_stats']
-        
-        # Calculate pressure handling score
-        pressure_handling = 0.5  # Base score
-        
-        # Adjust based on performance in important matches
-        if stats.get('important_match_performance', 0) > 0:
-            pressure_handling += 0.2
-        
-        # Adjust based on performance in close matches
-        if stats.get('close_match_performance', 0) > 0:
-            pressure_handling += 0.2
-        
-        # Calculate clutch performance score
-        clutch_performance = 0.5  # Base score
-        
-        # Adjust based on performance in final overs
-        if stats.get('final_overs_performance', 0) > 0:
-            clutch_performance += 0.2
-        
-        # Adjust based on performance in must-win matches
-        if stats.get('must_win_performance', 0) > 0:
-            clutch_performance += 0.2
-        
-        return {
-            'pressure_handling': min(pressure_handling, 1.0),
-            'clutch_performance': min(clutch_performance, 1.0)
-        }
-
-    def save_processed_data(self, match_data: Dict, player_data: Dict):
-        """Save processed data to files"""
+        """Calculate pressure index based on match context"""
         try:
-            # Save match data
-            match_file = DATA_DIR / f"processed_match_{match_data['match_id']}.json"
-            with open(match_file, 'w') as f:
-                json.dump(match_data, f, indent=4)
+            pressure = 1.0
+            team1 = match_data.get('team1')
+            team2 = match_data.get('team2')
             
-            # Save player data
-            player_file = DATA_DIR / f"processed_player_{player_data['id']}.json"
-            with open(player_file, 'w') as f:
-                json.dump(player_data, f, indent=4)
+            # Check if it's a rivalry match
+            if team1 in TEAMS and team2 in TEAMS:
+                pressure *= 1.3
             
-            logger.info("Saved processed data successfully")
+            # Check if it's a must-win situation
+            if 'must win' in match_data.get('status', '').lower():
+                pressure *= 1.4
+            
+            return pressure
+        except Exception as e:
+            logger.error(f"Error calculating pressure index: {e}")
+            return 1.0
+
+    def _get_venue_factors(self, venue: str) -> Dict:
+        """Get venue-specific factors"""
+        try:
+            factors = {
+                'home_advantage': 1.0,
+                'pitch_type': 'unknown',
+                'boundary_size': 'medium'
+            }
+            
+            # Check if venue is home ground for any team
+            for team, info in TEAMS.items():
+                if info['home_ground'] == venue:
+                    factors['home_advantage'] = 1.2
+                    break
+            
+            return factors
+        except Exception as e:
+            logger.error(f"Error getting venue factors: {e}")
+            return {'home_advantage': 1.0, 'pitch_type': 'unknown', 'boundary_size': 'medium'}
+
+    def _calculate_team_form(self, match_data: Dict) -> Dict:
+        """Calculate team form based on recent matches"""
+        try:
+            team1 = match_data.get('team1')
+            team2 = match_data.get('team2')
+            
+            form = {
+                team1: {'wins': 0, 'losses': 0, 'form_score': 0.5},
+                team2: {'wins': 0, 'losses': 0, 'form_score': 0.5}
+            }
+            
+            if self.historical_data is not None:
+                for team in [team1, team2]:
+                    recent_matches = self.historical_data[
+                        (self.historical_data['team1'] == team) | 
+                        (self.historical_data['team2'] == team)
+                    ].tail(5)
+                    
+                    for _, match in recent_matches.iterrows():
+                        if match['winner'] == team:
+                            form[team]['wins'] += 1
+                        else:
+                            form[team]['losses'] += 1
+                    
+                    total = form[team]['wins'] + form[team]['losses']
+                    if total > 0:
+                        form[team]['form_score'] = form[team]['wins'] / total
+            
+            return form
+        except Exception as e:
+            logger.error(f"Error calculating team form: {e}")
+            return {}
+
+    def _get_head_to_head_stats(self, match_data: Dict) -> Dict:
+        """Get head-to-head statistics between teams"""
+        try:
+            team1 = match_data.get('team1')
+            team2 = match_data.get('team2')
+            
+            h2h = {
+                'total_matches': 0,
+                'team1_wins': 0,
+                'team2_wins': 0,
+                'win_ratio': 0.5
+            }
+            
+            if self.historical_data is not None:
+                h2h_matches = self.historical_data[
+                    ((self.historical_data['team1'] == team1) & (self.historical_data['team2'] == team2)) |
+                    ((self.historical_data['team1'] == team2) & (self.historical_data['team2'] == team1))
+                ]
+                
+                h2h['total_matches'] = len(h2h_matches)
+                h2h['team1_wins'] = len(h2h_matches[h2h_matches['winner'] == team1])
+                h2h['team2_wins'] = len(h2h_matches[h2h_matches['winner'] == team2])
+                
+                if h2h['total_matches'] > 0:
+                    h2h['win_ratio'] = h2h['team1_wins'] / h2h['total_matches']
+            
+            return h2h
+        except Exception as e:
+            logger.error(f"Error getting head-to-head stats: {e}")
+            return {}
+
+    def _process_players(self, players: List[Dict]) -> List[Dict]:
+        """Process and enrich player data"""
+        try:
+            processed_players = []
+            for player in players:
+                player_id = player.get('id')
+                if player_id in self.player_stats:
+                    stats = self.player_stats[player_id]
+                    processed_player = {
+                        'id': player_id,
+                        'name': player.get('name'),
+                        'role': player.get('role'),
+                        'form': self._calculate_player_form(stats),
+                        'role_metrics': self._calculate_role_metrics(stats, player.get('role')),
+                        'batting_metrics': self._calculate_batting_metrics(stats),
+                        'bowling_metrics': self._calculate_bowling_metrics(stats),
+                        'consistency_score': self._calculate_consistency_score(stats),
+                        'pressure_metrics': self._calculate_pressure_metrics(stats)
+                    }
+                    processed_players.append(processed_player)
+            return processed_players
+        except Exception as e:
+            logger.error(f"Error processing players: {e}")
+            return []
+
+    def _calculate_player_form(self, stats: Dict) -> Dict:
+        """Calculate player form based on recent performances"""
+        try:
+            form = {
+                'runs': 0,
+                'wickets': 0,
+                'strike_rate': 0,
+                'economy_rate': 0,
+                'form_score': 0.5
+            }
+            
+            if 'recent_matches' in stats:
+                recent = stats['recent_matches'][:5]  # Last 5 matches
+                total_runs = sum(match.get('runs', 0) for match in recent)
+                total_wickets = sum(match.get('wickets', 0) for match in recent)
+                
+                form['runs'] = total_runs / len(recent) if recent else 0
+                form['wickets'] = total_wickets / len(recent) if recent else 0
+                form['strike_rate'] = stats.get('batting', {}).get('strike_rate', 0)
+                form['economy_rate'] = stats.get('bowling', {}).get('economy_rate', 0)
+                
+                # Calculate form score based on performance consistency
+                form['form_score'] = self._calculate_form_score(recent)
+            
+            return form
+        except Exception as e:
+            logger.error(f"Error calculating player form: {e}")
+            return {}
+
+    def _calculate_role_metrics(self, stats: Dict, role: str) -> Dict:
+        """Calculate role-specific metrics"""
+        try:
+            metrics = {
+                'role_importance': 1.0,
+                'role_performance': 0.5
+            }
+            
+            if role == 'Batsman':
+                metrics['role_importance'] = 1.2
+                metrics['role_performance'] = stats.get('batting', {}).get('average', 0) / 50
+            elif role == 'Bowler':
+                metrics['role_importance'] = 1.1
+                metrics['role_performance'] = stats.get('bowling', {}).get('average', 0) / 30
+            elif role == 'All-Rounder':
+                metrics['role_importance'] = 1.3
+                batting_perf = stats.get('batting', {}).get('average', 0) / 50
+                bowling_perf = stats.get('bowling', {}).get('average', 0) / 30
+                metrics['role_performance'] = (batting_perf + bowling_perf) / 2
+            
+            return metrics
+        except Exception as e:
+            logger.error(f"Error calculating role metrics: {e}")
+            return {}
+
+    def _calculate_batting_metrics(self, stats: Dict) -> Dict:
+        """Calculate batting-specific metrics"""
+        try:
+            batting = stats.get('batting', {})
+            return {
+                'average': batting.get('average', 0),
+                'strike_rate': batting.get('strike_rate', 0),
+                'boundary_rate': batting.get('boundary_rate', 0),
+                'consistency': batting.get('consistency', 0.5)
+            }
+        except Exception as e:
+            logger.error(f"Error calculating batting metrics: {e}")
+            return {}
+
+    def _calculate_bowling_metrics(self, stats: Dict) -> Dict:
+        """Calculate bowling-specific metrics"""
+        try:
+            bowling = stats.get('bowling', {})
+            return {
+                'average': bowling.get('average', 0),
+                'economy_rate': bowling.get('economy_rate', 0),
+                'wicket_rate': bowling.get('wicket_rate', 0),
+                'consistency': bowling.get('consistency', 0.5)
+            }
+        except Exception as e:
+            logger.error(f"Error calculating bowling metrics: {e}")
+            return {}
+
+    def _calculate_consistency_score(self, stats: Dict) -> float:
+        """Calculate overall consistency score"""
+        try:
+            batting_consistency = stats.get('batting', {}).get('consistency', 0.5)
+            bowling_consistency = stats.get('bowling', {}).get('consistency', 0.5)
+            return (batting_consistency + bowling_consistency) / 2
+        except Exception as e:
+            logger.error(f"Error calculating consistency score: {e}")
+            return 0.5
+
+    def _calculate_pressure_metrics(self, stats: Dict) -> Dict:
+        """Calculate performance under pressure"""
+        try:
+            return {
+                'high_stakes_performance': stats.get('pressure', {}).get('high_stakes', 0.5),
+                'chase_performance': stats.get('pressure', {}).get('chase', 0.5),
+                'death_overs_performance': stats.get('pressure', {}).get('death_overs', 0.5)
+            }
+        except Exception as e:
+            logger.error(f"Error calculating pressure metrics: {e}")
+            return {}
+
+    def _calculate_form_score(self, recent_matches: List[Dict]) -> float:
+        """Calculate form score based on recent performance consistency"""
+        try:
+            if not recent_matches:
+                return 0.5
+            
+            scores = []
+            for match in recent_matches:
+                score = 0.5
+                
+                # Batting performance
+                if 'runs' in match:
+                    if match['runs'] >= 50:
+                        score += 0.2
+                    elif match['runs'] >= 30:
+                        score += 0.1
+                
+                # Bowling performance
+                if 'wickets' in match:
+                    if match['wickets'] >= 3:
+                        score += 0.2
+                    elif match['wickets'] >= 2:
+                        score += 0.1
+                
+                scores.append(score)
+            
+            return sum(scores) / len(scores)
+        except Exception as e:
+            logger.error(f"Error calculating form score: {e}")
+            return 0.5
+
+    def validate_data(self, data: Dict) -> bool:
+        """Validate data against defined rules"""
+        try:
+            # Validate player statistics
+            for player in data.get('players', []):
+                stats = player.get('recent_stats', {})
+                
+                # Check runs
+                runs = stats.get('batting', {}).get('runs', 0)
+                if not (VALIDATION_RULES['min_runs'] <= runs <= VALIDATION_RULES['max_runs']):
+                    logger.warning(f"Invalid runs value: {runs}")
+                    return False
+                
+                # Check wickets
+                wickets = stats.get('bowling', {}).get('wickets', 0)
+                if not (VALIDATION_RULES['min_wickets'] <= wickets <= VALIDATION_RULES['max_wickets']):
+                    logger.warning(f"Invalid wickets value: {wickets}")
+                    return False
+                
+                # Check strike rate
+                strike_rate = stats.get('batting', {}).get('strike_rate', 0)
+                if not (VALIDATION_RULES['min_strike_rate'] <= strike_rate <= VALIDATION_RULES['max_strike_rate']):
+                    logger.warning(f"Invalid strike rate: {strike_rate}")
+                    return False
+                
+                # Check economy rate
+                economy_rate = stats.get('bowling', {}).get('economy_rate', 0)
+                if not (VALIDATION_RULES['min_economy_rate'] <= economy_rate <= VALIDATION_RULES['max_economy_rate']):
+                    logger.warning(f"Invalid economy rate: {economy_rate}")
+                    return False
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error validating data: {e}")
+            return False
+
+    def save_processed_data(self, data: Dict, match_id: str):
+        """Save processed data to file"""
+        try:
+            output_file = self.data_dir / f"processed_match_{match_id}.json"
+            with open(output_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            logger.info(f"Saved processed data for match {match_id}")
         except Exception as e:
             logger.error(f"Error saving processed data: {e}")
 
-    def update_historical_data(self, new_match_data: Dict):
-        """Update historical data with new match information"""
-        try:
-            # Convert new match data to DataFrame
-            new_match_df = pd.DataFrame([new_match_data])
-            
-            # Append to historical data
-            self.historical_data = pd.concat([self.historical_data, new_match_df])
-            
-            # Remove duplicates
-            self.historical_data = self.historical_data.drop_duplicates(subset=['match_id'])
-            
-            # Save updated historical data
-            self.historical_data.to_csv(HISTORICAL_DATA_FILE, index=False)
-            
-            logger.info(f"Updated historical data with new match {new_match_data['match_id']}")
-        except Exception as e:
-            logger.error(f"Error updating historical data: {e}")
-
-    def update_player_stats(self, new_player_data: Dict):
-        """Update player statistics with new performance data"""
-        try:
-            # Convert new player data to DataFrame
-            new_player_df = pd.DataFrame([new_player_data])
-            
-            # Update or append to player stats
-            if not self.player_stats.empty:
-                self.player_stats = self.player_stats[
-                    self.player_stats['player_id'] != new_player_data['id']
-                ]
-            
-            self.player_stats = pd.concat([self.player_stats, new_player_df])
-            
-            # Save updated player stats
-            self.player_stats.to_csv(PLAYER_STATS_FILE, index=False)
-            
-            logger.info(f"Updated player statistics for player {new_player_data['id']}")
-        except Exception as e:
-            logger.error(f"Error updating player statistics: {e}") 
+if __name__ == "__main__":
+    processor = DataProcessor()
+    # Example usage
+    test_match = {
+        'match_id': 'test123',
+        'date': '2024-04-02',
+        'venue': 'Wankhede Stadium',
+        'team1': 'Mumbai Indians',
+        'team2': 'Chennai Super Kings',
+        'status': 'Final',
+        'score': '180/5',
+        'players': []
+    }
+    processed_data = processor.process_match_data(test_match)
+    processor.save_processed_data(processed_data, 'test123') 

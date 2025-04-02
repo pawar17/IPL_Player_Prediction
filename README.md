@@ -1,226 +1,134 @@
-# IPL Player Performance Prediction System
+# IPL Player Performance Prediction
 
-A sophisticated machine learning and statistical model for predicting player performances in IPL matches using historical data, current form, and real-time updates.
-
-## Project Overview
-
-This system provides detailed predictions for player performances in upcoming IPL matches by analyzing:
-- Historical match data (2008-2023)
-- Current player statistics and form
-- Real-time updates (injuries, recent performances, etc.)
-- Match context (venue, opposition, weather, etc.)
-- Team strengths and weaknesses
+A machine learning application that predicts player performance in IPL matches using historical data and real-time statistics.
 
 ## Features
 
-- **Advanced ML Models**: Uses ensemble methods (XGBoost, RandomForest, GradientBoosting) for accurate predictions
-- **Efficient Data Collection**: Minimizes API calls with smart caching and local storage
-- **Comprehensive Feature Engineering**: 40+ features including player form, match context, and team strengths
-- **Confidence Intervals**: Each prediction includes statistical confidence intervals
-- **Interactive Frontend**: User-friendly Streamlit interface with visualizations
-- **Command-line Interface**: Flexible CLI for batch predictions and automation
+- Live match data collection from Cricbuzz API
+- Player performance prediction
+- Historical data analysis
+- Interactive dashboard
+- Real-time updates
 
-## Project Structure
+## Prerequisites
 
-```
-IPL_Player_Prediction/
-├── data/
-│   ├── historical/          # Historical IPL data (2008-2023)
-│   ├── processed/           # Processed and feature-engineered data
-│   ├── cache/               # Cached data to minimize API calls
-│   ├── updates/             # Real-time updates (injuries, form, etc.)
-│   └── predictions/         # Saved prediction outputs
-├── models/
-│   └── saved/               # Saved ML models and metadata
-├── src/
-│   ├── data_collection/     # Data collection and processing modules
-│   │   ├── efficient_data_collector.py  # Smart data collection system
-│   │   └── ipl_2025_data.py # IPL 2025 schedule and team data
-│   ├── models/              # Prediction models
-│   │   └── advanced_player_predictor.py # ML-based prediction system
-│   ├── predict_player_performance.py # Main prediction script
-│   └── real_time/           # Real-time data update modules
-├── frontend/
-│   └── app.py               # Streamlit frontend application
-└── requirements.txt         # Project dependencies
-```
+- Python 3.9 or higher
+- Docker and Docker Compose
+- PostgreSQL (if running locally)
+- Cricbuzz RapidAPI key
 
-## Data Sources
-
-### 1. Historical Data
-- **Source**: IPL matches from 2008-2023
-- **Features**: Match details, player performances, team statistics
-
-### 2. Player Statistics
-- **Source**: Aggregated player performance data
-- **Features**: Career stats, recent form, consistency metrics
-
-### 3. Real-time Updates
-- **Source**: Local data storage with periodic updates
-- **Features**: Injuries, recent performances, team changes
-
-### 4. Match Context
-- **Source**: IPL 2025 schedule and venue data
-- **Features**: Venue statistics, home advantage, match type
-
-## Prediction Model Architecture
-
-Our advanced prediction system uses ensemble machine learning models with the following components:
-
-### 1. Feature Engineering (40+ features)
-- **Player Performance**: Recent averages, career stats, form factors
-- **Match Context**: Venue statistics, home advantage, match type
-- **Team Dynamics**: Team strength, opposition strength, player roles
-- **External Factors**: Weather, pitch conditions, recent injuries
-
-### 2. ML Models
-- **Runs Prediction**: XGBoost Regressor
-- **Wickets Prediction**: Random Forest Regressor
-- **Strike Rate Prediction**: Gradient Boosting Regressor
-- **Economy Rate Prediction**: Gradient Boosting Regressor
-
-### 3. Model Training
-- **Data Splitting**: 80% training, 20% validation
-- **Hyperparameter Tuning**: Grid search for optimal parameters
-- **Cross-validation**: 5-fold cross-validation
-- **Feature Importance Analysis**: Identifying key predictive features
-
-## Installation
+## Setup
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/pawar17/IPL_Player_Prediction.git
-cd IPL_Player_Prediction
+git clone <repository-url>
+cd ipl-player-prediction
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables (optional):
+4. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env file with your API keys if needed
+# Edit .env with your configuration
 ```
 
-## Usage
+## Running Locally
 
-### Command-line Interface
-
-1. **Train prediction models**:
+1. Start the database:
 ```bash
-python src/predict_player_performance.py train
+# If using Docker
+docker-compose up -d db
+
+# If running PostgreSQL locally
+# Make sure PostgreSQL is running and create the database
+createdb ipl_prediction
 ```
 
-2. **Predict player performance**:
+2. Initialize the database:
 ```bash
-python src/predict_player_performance.py predict-player --match 12 --player "Virat Kohli"
+python init_db.py
 ```
 
-3. **Predict team performance**:
+3. Start the backend API:
 ```bash
-python src/predict_player_performance.py predict-team --match 12 --team "Royal Challengers Bangalore"
+python app.py
 ```
 
-4. **Predict match performance**:
+4. Start the frontend:
 ```bash
-python src/predict_player_performance.py predict-match --match 12
+streamlit run frontend.py
 ```
 
-5. **List available matches**:
+## Docker Deployment
+
+1. Build and start the containers:
 ```bash
-python src/predict_player_performance.py list-matches
+docker-compose up -d
 ```
 
-### Interactive Frontend
-
-1. **Start the Streamlit app**:
+2. Initialize the database:
 ```bash
-cd frontend
-streamlit run app.py
+docker-compose exec app python init_db.py
 ```
 
-2. **Access the web interface** at http://localhost:8501
+The application will be available at:
+- Frontend: http://localhost:8501
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
 
-## Example Output
+## Project Structure
 
-```json
-{
-  "runs": {
-    "value": 42.5,
-    "lower_bound": 32.8,
-    "upper_bound": 52.2,
-    "confidence": 0.95
-  },
-  "wickets": {
-    "value": 0.5,
-    "lower_bound": 0.0,
-    "upper_bound": 1.2,
-    "confidence": 0.95
-  },
-  "strike_rate": {
-    "value": 138.6,
-    "lower_bound": 125.3,
-    "upper_bound": 151.9,
-    "confidence": 0.95
-  },
-  "economy_rate": {
-    "value": 8.2,
-    "lower_bound": 7.1,
-    "upper_bound": 9.3,
-    "confidence": 0.95
-  },
-  "match_context": {
-    "player_name": "Virat Kohli",
-    "team": "Royal Challengers Bangalore",
-    "opposition": "Mumbai Indians",
-    "venue": "M. Chinnaswamy Stadium",
-    "match_date": "2025-04-15",
-    "match_type": "League"
-  },
-  "timestamp": "2025-04-02T00:57:35-04:00"
-}
+```
+ipl-player-prediction/
+├── app.py                 # FastAPI backend
+├── frontend.py           # Streamlit frontend
+├── data_collector.py     # Data collection module
+├── data_processor.py     # Data processing module
+├── models.py             # Database models
+├── database.py           # Database configuration
+├── config.py             # Application configuration
+├── migrations/           # Database migrations
+├── data/                 # Data storage
+│   ├── cache/           # Cache directory
+│   ├── historical_matches/  # Historical match data
+│   └── player_stats/    # Player statistics
+├── logs/                 # Application logs
+├── requirements.txt      # Python dependencies
+├── Dockerfile           # Docker configuration
+├── docker-compose.yml   # Docker Compose configuration
+└── .env                 # Environment variables
 ```
 
-## Performance Metrics
+## API Endpoints
 
-Our prediction system achieves the following performance on validation data:
-
-| Target | MAE | RMSE | R² |
-|--------|-----|------|---|
-| Runs | 8.2 | 10.5 | 0.76 |
-| Wickets | 0.4 | 0.6 | 0.72 |
-| Strike Rate | 12.3 | 15.8 | 0.68 |
-| Economy Rate | 0.8 | 1.1 | 0.71 |
-
-## Future Enhancements
-
-1. **Data Collection**
-   - Integrate with official IPL API when available
-   - Add more historical data features
-   - Implement automated data validation
-
-2. **Model Improvements**
-   - Experiment with deep learning models
-   - Add player interaction effects
-   - Implement Bayesian prediction methods
-
-3. **Frontend Enhancements**
-   - Add player comparison tools
-   - Implement historical accuracy tracking
-   - Create mobile-responsive design
+- `GET /matches` - Get all matches
+- `GET /matches/{match_id}` - Get match details
+- `GET /teams` - Get all teams
+- `GET /teams/{team_id}` - Get team details
+- `GET /players` - Get all players
+- `GET /players/{player_id}` - Get player details
+- `GET /predictions` - Get all predictions
+- `POST /predict` - Make a new prediction
+- `GET /live-data` - Get live match data
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- IPL for providing historical match data
-- Cricket statistics websites for player data
-- Contributors and maintainers of the Python packages used in this project
