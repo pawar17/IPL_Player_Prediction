@@ -12,27 +12,33 @@
       {
         "player_id": "RO01",
         "name": "Rohit Sharma",
-        "predicted_runs": 19.4,
-        "predicted_wickets": 0.5,
-        "confidence": 0.3,
+        "predicted_runs": 21.74,
+        "predicted_wickets": 0.85,
+        "confidence": 0.12,
+        "recent_matches": [],
         "factors": {
           "form": 0.0,
           "consistency": 0.0,
-          "head_to_head": 0.5,
-          "historical_average": 31.32
+          "batting_average": 0.0,
+          "bowling_average": 0.0,
+          "venue_performance": 0.5,
+          "opponent_performance": 0.15
         }
       },
       {
         "player_id": "SKY01",
         "name": "Suryakumar Yadav",
-        "predicted_runs": 20.72,
-        "predicted_wickets": 0.5,
-        "confidence": 0.3,
+        "predicted_runs": 14.81,
+        "predicted_wickets": 0.85,
+        "confidence": 0.12,
+        "recent_matches": [],
         "factors": {
           "form": 0.0,
           "consistency": 0.0,
-          "head_to_head": 0.5,
-          "historical_average": 35.73
+          "batting_average": 0.0,
+          "bowling_average": 0.0,
+          "venue_performance": 0.5,
+          "opponent_performance": 0.2966666666666667
         }
       }
     ]
@@ -43,27 +49,33 @@
       {
         "player_id": "MS01",
         "name": "MS Dhoni",
-        "predicted_runs": 21.43,
-        "predicted_wickets": 0.5,
-        "confidence": 0.3,
+        "predicted_runs": 24.73,
+        "predicted_wickets": 0.28,
+        "confidence": 0.12,
+        "recent_matches": [],
         "factors": {
           "form": 0.0,
           "consistency": 0.0,
-          "head_to_head": 0.5,
-          "historical_average": 38.09
+          "batting_average": 0.0,
+          "bowling_average": 0.0,
+          "venue_performance": 0.11666666666666665,
+          "opponent_performance": 0.11666666666666665
         }
       },
       {
         "player_id": "RJ01",
         "name": "Ravindra Jadeja",
-        "predicted_runs": 17.92,
-        "predicted_wickets": 7.85,
-        "confidence": 0.3,
+        "predicted_runs": 20.46,
+        "predicted_wickets": 0.85,
+        "confidence": 0.12,
+        "recent_matches": [],
         "factors": {
           "form": 0.0,
           "consistency": 0.0,
-          "head_to_head": 0.5,
-          "historical_average": 26.41
+          "batting_average": 0.0,
+          "bowling_average": 0.0,
+          "venue_performance": 0.14,
+          "opponent_performance": 0.0
         }
       }
     ]

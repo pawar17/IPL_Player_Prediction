@@ -1,0 +1,6 @@
+match_id,date,venue,team1,team2,winner,player_id,player_name,runs,wickets,strike_rate,economy_rate,opponent,match_importance,pressure_index
+1,2023-05-28,Wankhede Stadium,Mumbai Indians,Chennai Super Kings,Mumbai Indians,RO01,Rohit Sharma,45,0,150.0,0.0,Chennai Super Kings,0.8,0.7
+2,2023-05-26,MA Chidambaram Stadium,Chennai Super Kings,Mumbai Indians,Chennai Super Kings,MS01,MS Dhoni,35,0,175.0,0.0,Mumbai Indians,0.7,0.8
+3,2023-05-24,Wankhede Stadium,Mumbai Indians,Gujarat Titans,Gujarat Titans,HH01,Hardik Pandya,55,2,165.0,8.5,Mumbai Indians,0.6,0.6
+4,2023-05-22,Wankhede Stadium,Mumbai Indians,Chennai Super Kings,Mumbai Indians,SKY01,Suryakumar Yadav,89,0,180.0,0.0,Chennai Super Kings,0.7,0.7
+5,2023-05-20,MA Chidambaram Stadium,Chennai Super Kings,Gujarat Titans,Chennai Super Kings,RJ01,Ravindra Jadeja,42,3,140.0,6.5,Gujarat Titans,0.6,0.5
