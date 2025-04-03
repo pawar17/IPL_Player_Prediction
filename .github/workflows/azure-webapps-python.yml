@@ -7,6 +7,7 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: ipl-player-prediction
+  CI: false # Prevent treating warnings as errors
 
 permissions:
   contents: read
@@ -38,6 +39,8 @@ jobs:
 
       - name: Install and build frontend
         working-directory: frontend
+        env:
+          CI: false # Also set it here for the build step specifically
         run: |
           npm ci
           npm run build

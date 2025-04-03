@@ -6,7 +6,6 @@ function Predictions() {
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [players, setPlayers] = useState([]);
   const [predictions, setPredictions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,12 +19,6 @@ function Predictions() {
       fetchMatchTeams(selectedMatch.id);
     }
   }, [selectedMatch]);
-
-  useEffect(() => {
-    if (selectedTeam) {
-      fetchTeamPlayers(selectedTeam.id);
-    }
-  }, [selectedTeam]);
 
   const fetchMatches = async () => {
     try {
@@ -45,17 +38,6 @@ function Predictions() {
       setLoading(false);
     } catch (err) {
       setError('Failed to fetch match teams');
-      setLoading(false);
-    }
-  };
-
-  const fetchTeamPlayers = async (teamId) => {
-    try {
-      const response = await axios.get(`http://localhost:8000/api/team/${teamId}/players`);
-      setPlayers(response.data);
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to fetch team players');
       setLoading(false);
     }
   };
