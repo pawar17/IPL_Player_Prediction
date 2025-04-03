@@ -8,12 +8,15 @@ on:
 env:
   AZURE_WEBAPP_NAME: ipl-player-prediction
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -27,7 +30,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -41,37 +44,18 @@ jobs:
           mkdir -p ../static
           cp -r build/* ../static/
 
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment
+          cp -r * deployment/ 2>/dev/null || :
+          cd deployment
+          rm -rf node_modules frontend/.git frontend/node_modules __pycache__ .pytest_cache .git .github
+
       - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .
-            !venv/
-            !.git/
-            !.github/
-            !.pytest_cache/
-            !__pycache__/
-            !*.pyc
-            !*.pyo
-            !*.pyd
-            !.Python
-            !env/
-            !.env/
-            !build/
-            !develop-eggs/
-            !dist/
-            !downloads/
-            !eggs/
-            !.eggs/
-            !lib/
-            !lib64/
-            !parts/
-            !sdist/
-            !var/
-            !*.egg-info/
-            !.installed.cfg
-            !*.egg
+          path: deployment/
 
   deploy:
     runs-on: ubuntu-latest
@@ -82,14 +66,14 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-app
           path: .
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
