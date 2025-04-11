@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api';
+import { Container, Row, Col, Card, Table, Tabs, Tab, Form } from 'react-bootstrap';
+import { getMatchPredictions, getMatches } from '../api';
 
 const MatchPredictions = () => {
     const [matches, setMatches] = useState([]);
@@ -12,15 +13,9 @@ const MatchPredictions = () => {
         loadMatches();
     }, []);
 
-    useEffect(() => {
-        if (selectedMatch) {
-            loadPredictions(selectedMatch);
-        }
-    }, [selectedMatch]);
-
     const loadMatches = async () => {
         try {
-            const data = await api.getMatches();
+            const data = await getMatches();
             setMatches(data);
         } catch (err) {
             setError('Failed to load matches');
@@ -28,87 +23,127 @@ const MatchPredictions = () => {
         }
     };
 
-    const loadPredictions = async (matchId) => {
+    const handleMatchChange = async (matchNo) => {
         setLoading(true);
         setError(null);
         try {
-            const data = await api.getMatchPredictions(matchId);
-            setPredictions(data);
+            const data = await getMatchPredictions(matchNo);
+            setSelectedMatch(data.match);
+            setPredictions(data.predictions);
         } catch (err) {
             setError('Failed to load predictions');
             console.error(err);
-        } finally {
-            setLoading(false);
         }
+        setLoading(false);
     };
 
+    const renderPredictionTable = (players) => (
+        <Table striped bordered hover responsive>
+            <thead>
+                <tr>
+                    <th>Player</th>
+                    <th>Role</th>
+                    <th>Team</th>
+                    <th>Predicted Runs</th>
+                    <th>Predicted Wickets</th>
+                    <th>Strike Rate</th>
+                    <th>Economy Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {players.map((pred, index) => (
+                    <tr key={index}>
+                        <td>{pred.player.name}</td>
+                        <td>{pred.player.role}</td>
+                        <td>{pred.team}</td>
+                        <td>{pred.prediction.batting.value}</td>
+                        <td>{pred.prediction.bowling.value}</td>
+                        <td>{pred.prediction.batting.strike_rate}</td>
+                        <td>{pred.prediction.bowling.economy_rate}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </Table>
+    );
+
     return (
-        <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">IPL Player Predictions</h1>
-            
-            {/* Match Selection */}
-            <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Match
-                </label>
-                <select
-                    className="w-full p-2 border rounded"
-                    value={selectedMatch || ''}
-                    onChange={(e) => setSelectedMatch(e.target.value)}
-                >
-                    <option value="">Select a match...</option>
-                    {matches.map((match) => (
-                        <option key={match.match_id} value={match.match_id}>
-                            {match.team1} vs {match.team2} - {match.date}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <Container fluid className="py-4">
+            <Row className="mb-4">
+                <Col>
+                    <Card>
+                        <Card.Body>
+                            <Form.Group>
+                                <Form.Label>Select Match</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    onChange={(e) => handleMatchChange(e.target.value)}
+                                >
+                                    <option value="">Choose a match...</option>
+                                    {matches.map((match) => (
+                                        <option key={match.match_no} value={match.match_no}>
+                                            Match {match.match_no}: {match.team1} vs {match.team2} ({match.date})
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                            </Form.Group>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
 
-            {/* Loading State */}
-            {loading && (
-                <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                </div>
-            )}
-
-            {/* Error State */}
             {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    {error}
-                </div>
+                <Row className="mb-4">
+                    <Col>
+                        <div className="alert alert-danger">{error}</div>
+                    </Col>
+                </Row>
             )}
 
-            {/* Predictions Display */}
-            {predictions.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {predictions.map((pred) => (
-                        <div key={pred.player.id} className="border rounded p-4">
-                            <h3 className="font-bold text-lg mb-2">{pred.player.name}</h3>
-                            <p className="text-sm text-gray-600 mb-2">{pred.player.team}</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <p className="text-sm font-medium">Runs</p>
-                                    <p className="text-lg">{pred.prediction.runs}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium">Wickets</p>
-                                    <p className="text-lg">{pred.prediction.wickets}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium">Strike Rate</p>
-                                    <p className="text-lg">{pred.prediction.strike_rate}</p>
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium">Economy Rate</p>
-                                    <p className="text-lg">{pred.prediction.economy_rate}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            {loading && (
+                <Row className="mb-4">
+                    <Col>
+                        <div className="text-center">Loading predictions...</div>
+                    </Col>
+                </Row>
             )}
-        </div>
+
+            {selectedMatch && predictions.length > 0 && (
+                <Row>
+                    <Col>
+                        <Card className="mb-4">
+                            <Card.Body>
+                                <h4>Match Details</h4>
+                                <p>
+                                    <strong>Match {selectedMatch.match_no}:</strong> {selectedMatch.team1} vs {selectedMatch.team2}
+                                </p>
+                                <p>
+                                    <strong>Date:</strong> {selectedMatch.date} at {selectedMatch.time}
+                                </p>
+                                <p>
+                                    <strong>Venue:</strong> {selectedMatch.venue}
+                                </p>
+                            </Card.Body>
+                        </Card>
+
+                        <Tabs defaultActiveKey="all" className="mb-4">
+                            <Tab eventKey="all" title="All Players">
+                                {renderPredictionTable(predictions)}
+                            </Tab>
+                            <Tab eventKey="team1" title={selectedMatch.team1}>
+                                {renderPredictionTable(
+                                    predictions.filter(p => p.team === selectedMatch.team1)
+                                )}
+                            </Tab>
+                            <Tab eventKey="team2" title={selectedMatch.team2}>
+                                {renderPredictionTable(
+                                    predictions.filter(p => p.team === selectedMatch.team2)
+                                )}
+                            </Tab>
+                        </Tabs>
+                    </Col>
+                </Row>
+            )}
+        </Container>
     );
 };
 

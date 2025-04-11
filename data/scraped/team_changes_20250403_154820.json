@@ -1,0 +1,100 @@
+{
+    "CSK": {
+        "MS Dhoni": {
+            "role": "Wicket Keeper Batsman",
+            "batting_position": 6,
+            "form_factor": 1.2
+        },
+        "Ruturaj Gaikwad": {
+            "role": "Batsman",
+            "batting_position": 1,
+            "form_factor": 1.3
+        },
+        "Devon Conway": {
+            "role": "Batsman",
+            "batting_position": 2,
+            "form_factor": 1.1
+        },
+        "Ajinkya Rahane": {
+            "role": "Batsman",
+            "batting_position": 3,
+            "form_factor": 1.0
+        },
+        "Shivam Dube": {
+            "role": "All-rounder",
+            "batting_position": 4,
+            "bowling_position": 5,
+            "form_factor": 1.2
+        },
+        "Ravindra Jadeja": {
+            "role": "All-rounder",
+            "batting_position": 7,
+            "bowling_position": 2,
+            "form_factor": 1.4
+        },
+        "Deepak Chahar": {
+            "role": "Bowler",
+            "bowling_position": 1,
+            "form_factor": 1.1
+        },
+        "Tushar Deshpande": {
+            "role": "Bowler",
+            "bowling_position": 3,
+            "form_factor": 1.0
+        },
+        "Matheesha Pathirana": {
+            "role": "Bowler",
+            "bowling_position": 4,
+            "form_factor": 1.2
+        }
+    },
+    "MI": {
+        "Rohit Sharma": {
+            "role": "Batsman",
+            "batting_position": 1,
+            "form_factor": 1.1
+        },
+        "Ishan Kishan": {
+            "role": "Wicket Keeper Batsman",
+            "batting_position": 2,
+            "form_factor": 1.2
+        },
+        "Tilak Varma": {
+            "role": "Batsman",
+            "batting_position": 3,
+            "form_factor": 1.3
+        },
+        "Hardik Pandya": {
+            "role": "All-rounder",
+            "batting_position": 4,
+            "bowling_position": 3,
+            "form_factor": 1.4
+        },
+        "Tim David": {
+            "role": "Batsman",
+            "batting_position": 5,
+            "form_factor": 1.1
+        },
+        "Romario Shepherd": {
+            "role": "All-rounder",
+            "batting_position": 7,
+            "bowling_position": 4,
+            "form_factor": 1.0
+        },
+        "Gerald Coetzee": {
+            "role": "Bowler",
+            "bowling_position": 2,
+            "form_factor": 1.2
+        },
+        "Jasprit Bumrah": {
+            "role": "Bowler",
+            "bowling_position": 1,
+            "form_factor": 1.5
+        },
+        "Piyush Chawla": {
+            "role": "Bowler",
+            "bowling_position": 5,
+            "form_factor": 1.1
+        }
+    }
+} 

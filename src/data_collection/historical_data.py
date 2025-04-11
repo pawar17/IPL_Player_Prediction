@@ -4,6 +4,8 @@ import numpy as np
 from pathlib import Path
 import logging
 from datetime import datetime
+import json
+from typing import Dict, Optional
 
 # Set up logging
 logging.basicConfig(
@@ -119,6 +121,150 @@ class IPLDataCollector:
         except Exception as e:
             logging.error(f"Error in data processing pipeline: {str(e)}")
             raise
+
+class HistoricalDataCollector:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.base_path = Path(__file__).parent.parent.parent
+        self.data_path = self.base_path / 'data'
+        self.processed_path = self.data_path / 'processed'
+        
+    def _get_batting_stats(self, player_data: pd.DataFrame) -> Dict:
+        """Calculate batting statistics from historical data"""
+        try:
+            batting_stats = {
+                'runs': int(player_data['batting_runs'].sum()),
+                'balls': int(player_data['balls_faced'].sum()),
+                'average': float(player_data['batting_runs'].sum() / max(1, len(player_data[player_data['batting_runs'] > 0]))),
+                'strike_rate': float(player_data['batting_runs'].sum() / max(1, player_data['balls_faced'].sum()) * 100),
+                'fours': int(player_data['fours'].sum()),
+                'sixes': int(player_data['sixes'].sum())
+            }
+            return batting_stats
+        except Exception as e:
+            self.logger.error(f"Error calculating batting stats: {str(e)}")
+            return {
+                'runs': 0,
+                'balls': 0,
+                'average': 0.0,
+                'strike_rate': 0.0,
+                'fours': 0,
+                'sixes': 0
+            }
+            
+    def _get_bowling_stats(self, player_data: pd.DataFrame) -> Dict:
+        """Calculate bowling statistics from historical data"""
+        try:
+            bowling_stats = {
+                'wickets': int(player_data['wickets'].sum()),
+                'runs_conceded': int(player_data['runs_conceded'].sum()),
+                'overs': float(player_data['overs'].sum()),
+                'economy': float(player_data['runs_conceded'].sum() / max(1, player_data['overs'].sum())),
+                'average': float(player_data['runs_conceded'].sum() / max(1, player_data['wickets'].sum()))
+            }
+            return bowling_stats
+        except Exception as e:
+            self.logger.error(f"Error calculating bowling stats: {str(e)}")
+            return {
+                'wickets': 0,
+                'runs_conceded': 0,
+                'overs': 0.0,
+                'economy': 0.0,
+                'average': 0.0
+            }
+            
+    def _get_fielding_stats(self, player_data: pd.DataFrame) -> Dict:
+        """Calculate fielding statistics from historical data"""
+        try:
+            fielding_stats = {
+                'catches': int(player_data['catches'].sum()),
+                'stumpings': int(player_data['stumpings'].sum()),
+                'run_outs': int(player_data['run_outs'].sum())
+            }
+            return fielding_stats
+        except Exception as e:
+            self.logger.error(f"Error calculating fielding stats: {str(e)}")
+            return {
+                'catches': 0,
+                'stumpings': 0,
+                'run_outs': 0
+            }
+            
+    def get_player_stats(self, player_name: str) -> Dict:
+        """Get player's historical statistics"""
+        try:
+            # Read ball-by-ball data
+            ball_by_ball_path = Path('IPL-DATASET-main/IPL-DATASET-main/csv/Ball_By_Ball_Match_Data.csv')
+            if not ball_by_ball_path.exists():
+                self.logger.error("Ball-by-ball data file not found")
+                return self._get_default_stats()
+                
+            ball_by_ball_data = pd.read_csv(ball_by_ball_path)
+            
+            # Filter data for the player (as batter and bowler)
+            batting_data = ball_by_ball_data[ball_by_ball_data['Batter'] == player_name]
+            bowling_data = ball_by_ball_data[ball_by_ball_data['Bowler'] == player_name]
+            
+            # Calculate batting stats
+            batting_stats = {
+                'runs': int(batting_data['BatsmanRun'].sum()),
+                'balls': len(batting_data),
+                'average': float(batting_data['BatsmanRun'].sum() / max(1, len(batting_data[batting_data['BatsmanRun'] > 0]))),
+                'strike_rate': float(batting_data['BatsmanRun'].sum() / max(1, len(batting_data)) * 100),
+                'fours': len(batting_data[batting_data['BatsmanRun'] == 4]),
+                'sixes': len(batting_data[batting_data['BatsmanRun'] == 6])
+            }
+            
+            # Calculate bowling stats
+            bowling_stats = {
+                'wickets': int(bowling_data['IsWicketDelivery'].sum()),
+                'runs_conceded': int(bowling_data['TotalRun'].sum()),
+                'overs': float(len(bowling_data) / 6),  # Convert balls to overs
+                'economy': float(bowling_data['TotalRun'].sum() / max(1, len(bowling_data) / 6)),
+                'average': float(bowling_data['TotalRun'].sum() / max(1, bowling_data['IsWicketDelivery'].sum()))
+            }
+            
+            # Calculate fielding stats
+            fielding_stats = {
+                'catches': int(ball_by_ball_data[ball_by_ball_data['FieldersInvolved'].fillna('').str.contains(player_name, na=False)]['IsWicketDelivery'].sum()),
+                'stumpings': 0,  # Need additional data to calculate stumpings
+                'run_outs': 0  # Need additional data to calculate run outs
+            }
+            
+            return {
+                'batting': batting_stats,
+                'bowling': bowling_stats,
+                'fielding': fielding_stats
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting historical stats for {player_name}: {str(e)}")
+            return self._get_default_stats()
+            
+    def _get_default_stats(self) -> Dict:
+        """Return default stats when data is not available"""
+        return {
+            'batting': {
+                'runs': 0,
+                'balls': 0,
+                'average': 0.0,
+                'strike_rate': 0.0,
+                'fours': 0,
+                'sixes': 0
+            },
+            'bowling': {
+                'wickets': 0,
+                'runs_conceded': 0,
+                'overs': 0.0,
+                'economy': 0.0,
+                'average': 0.0
+            },
+            'fielding': {
+                'catches': 0,
+                'stumpings': 0,
+                'run_outs': 0
+            }
+        }
 
 if __name__ == "__main__":
     collector = IPLDataCollector()

@@ -1,134 +1,116 @@
 """
-IPL 2025 data including schedule and team rosters
+IPL 2025 Match and Team Data
 """
 
-import numpy as np
-from datetime import datetime, timedelta
-
-__all__ = ['schedule', 'teams', 'get_match', 'get_team', 'get_player']
-
-# Sample schedule data
-schedule = [
-    {
-        'match_id': 1,
-        'date': '2025-03-23',
-        'team1': 'Mumbai Indians',
-        'team2': 'Chennai Super Kings',
-        'venue': 'Wankhede Stadium',
-        'match_type': 'league',
-        'match_importance': 0.8
-    },
-    {
-        'match_id': 2,
-        'date': '2025-03-24',
-        'team1': 'Royal Challengers Bangalore',
-        'team2': 'Kolkata Knight Riders',
-        'venue': 'M. Chinnaswamy Stadium',
-        'match_type': 'league',
-        'match_importance': 0.7
-    }
-]
-
-# Sample team data with current rosters and recent performance
-teams = [
-    {
-        'name': 'Mumbai Indians',
-        'players': [
-            {
-                'name': 'Rohit Sharma',
-                'id': 'RS001',
-                'role': 'Batsman',
-                'recent_stats': {
-                    'batting_average': 45.5,
-                    'strike_rate': 145.8,
-                    'form': 0.85,
-                    'consistency': 0.78
-                },
-                'recent_matches': [
-                    {'runs': 65, 'wickets': 0, 'strike_rate': 155.2},
-                    {'runs': 48, 'wickets': 0, 'strike_rate': 142.8},
-                    {'runs': 12, 'wickets': 0, 'strike_rate': 120.0},
-                    {'runs': 82, 'wickets': 0, 'strike_rate': 168.5},
-                    {'runs': 34, 'wickets': 0, 'strike_rate': 138.2}
-                ]
-            },
-            {
-                'name': 'Jasprit Bumrah',
-                'id': 'JB001',
-                'role': 'Bowler',
-                'recent_stats': {
-                    'bowling_average': 22.4,
-                    'economy_rate': 7.2,
-                    'form': 0.92,
-                    'consistency': 0.85
-                },
-                'recent_matches': [
-                    {'wickets': 3, 'economy_rate': 6.8},
-                    {'wickets': 2, 'economy_rate': 7.5},
-                    {'wickets': 1, 'economy_rate': 8.2},
-                    {'wickets': 4, 'economy_rate': 6.2},
-                    {'wickets': 2, 'economy_rate': 7.4}
-                ]
-            }
+# IPL 2025 Teams and Squads
+TEAMS = {
+    "Chennai Super Kings": {
+        "captain": "MS Dhoni",
+        "coach": "Stephen Fleming",
+        "home_ground": "M. A. Chidambaram Stadium",
+        "players": [
+            {"id": "CSK1", "name": "MS Dhoni", "role": "Wicket Keeper", "price": 16},
+            {"id": "CSK2", "name": "Ruturaj Gaikwad", "role": "Batsman", "price": 6},
+            {"id": "CSK3", "name": "Ravindra Jadeja", "role": "All-rounder", "price": 14},
+            {"id": "CSK4", "name": "Moeen Ali", "role": "All-rounder", "price": 8},
+            {"id": "CSK5", "name": "Deepak Chahar", "role": "Bowler", "price": 14},
+            {"id": "CSK6", "name": "Shivam Dube", "role": "All-rounder", "price": 4},
+            {"id": "CSK7", "name": "Tushar Deshpande", "role": "Bowler", "price": 20},
+            {"id": "CSK8", "name": "Mitchell Santner", "role": "All-rounder", "price": 1.9},
+            {"id": "CSK9", "name": "Devon Conway", "role": "Batsman", "price": 1},
+            {"id": "CSK10", "name": "Ajinkya Rahane", "role": "Batsman", "price": 0.5},
+            {"id": "CSK11", "name": "Matheesha Pathirana", "role": "Bowler", "price": 20},
+            {"id": "CSK12", "name": "Maheesh Theekshana", "role": "Bowler", "price": 70},
+            {"id": "CSK13", "name": "Rachin Ravindra", "role": "All-rounder", "price": 1.8},
+            {"id": "CSK14", "name": "Shardul Thakur", "role": "All-rounder", "price": 4},
+            {"id": "CSK15", "name": "Daryl Mitchell", "role": "All-rounder", "price": 14},
+            {"id": "CSK16", "name": "Sameer Rizvi", "role": "Batsman", "price": 8.4},
+            {"id": "CSK17", "name": "Mustafizur Rahman", "role": "Bowler", "price": 2},
+            {"id": "CSK18", "name": "Avanish Rao Aravelly", "role": "Wicket Keeper", "price": 0.2},
+            {"id": "CSK19", "name": "Mukesh Choudhary", "role": "Bowler", "price": 20},
+            {"id": "CSK20", "name": "Prashant Solanki", "role": "Bowler", "price": 1.2},
+            {"id": "CSK21", "name": "Simarjeet Singh", "role": "Bowler", "price": 20},
+            {"id": "CSK22", "name": "RS Hangargekar", "role": "All-rounder", "price": 1.5},
+            {"id": "CSK23", "name": "Shaik Rasheed", "role": "Batsman", "price": 20},
+            {"id": "CSK24", "name": "Nishant Sindhu", "role": "All-rounder", "price": 0.6},
+            {"id": "CSK25", "name": "Ajay Jadav Mandal", "role": "All-rounder", "price": 0.2}
         ]
     },
-    {
-        'name': 'Chennai Super Kings',
-        'players': [
-            {
-                'name': 'MS Dhoni',
-                'id': 'MSD001',
-                'role': 'Wicket Keeper Batsman',
-                'recent_stats': {
-                    'batting_average': 38.2,
-                    'strike_rate': 152.4,
-                    'form': 0.78,
-                    'consistency': 0.72
-                },
-                'recent_matches': [
-                    {'runs': 45, 'wickets': 0, 'strike_rate': 180.0},
-                    {'runs': 28, 'wickets': 0, 'strike_rate': 155.5},
-                    {'runs': 18, 'wickets': 0, 'strike_rate': 138.4},
-                    {'runs': 35, 'wickets': 0, 'strike_rate': 145.8},
-                    {'runs': 42, 'wickets': 0, 'strike_rate': 162.5}
-                ]
-            },
-            {
-                'name': 'Ravindra Jadeja',
-                'id': 'RJ001',
-                'role': 'All-rounder',
-                'recent_stats': {
-                    'batting_average': 32.5,
-                    'bowling_average': 24.8,
-                    'strike_rate': 142.5,
-                    'economy_rate': 7.8,
-                    'form': 0.88,
-                    'consistency': 0.82
-                },
-                'recent_matches': [
-                    {'runs': 35, 'wickets': 2, 'strike_rate': 145.8, 'economy_rate': 7.2},
-                    {'runs': 28, 'wickets': 1, 'strike_rate': 140.0, 'economy_rate': 8.4},
-                    {'runs': 42, 'wickets': 3, 'strike_rate': 150.0, 'economy_rate': 6.8},
-                    {'runs': 18, 'wickets': 2, 'strike_rate': 128.5, 'economy_rate': 7.5},
-                    {'runs': 25, 'wickets': 1, 'strike_rate': 138.8, 'economy_rate': 8.2}
-                ]
-            }
+    "Mumbai Indians": {
+        "captain": "Hardik Pandya",
+        "coach": "Mark Boucher",
+        "home_ground": "Wankhede Stadium",
+        "players": [
+            {"id": "MI1", "name": "Rohit Sharma", "role": "Batsman", "price": 16},
+            {"id": "MI2", "name": "Hardik Pandya", "role": "All-rounder", "price": 15},
+            {"id": "MI3", "name": "Jasprit Bumrah", "role": "Bowler", "price": 12},
+            {"id": "MI4", "name": "Suryakumar Yadav", "role": "Batsman", "price": 8},
+            {"id": "MI5", "name": "Ishan Kishan", "role": "Wicket Keeper", "price": 15.25},
+            {"id": "MI6", "name": "Tilak Varma", "role": "All-rounder", "price": 1.7},
+            {"id": "MI7", "name": "Tim David", "role": "All-rounder", "price": 8.25},
+            {"id": "MI8", "name": "Piyush Chawla", "role": "Bowler", "price": 0.5},
+            {"id": "MI9", "name": "Gerald Coetzee", "role": "Bowler", "price": 5},
+            {"id": "MI10", "name": "Dewald Brevis", "role": "Batsman", "price": 3},
+            {"id": "MI11", "name": "Romario Shepherd", "role": "All-rounder", "price": 8},
+            {"id": "MI12", "name": "Mohammed Nabi", "role": "All-rounder", "price": 1.5},
+            {"id": "MI13", "name": "Shams Mulani", "role": "All-rounder", "price": 20},
+            {"id": "MI14", "name": "Naman Dhir", "role": "All-rounder", "price": 20},
+            {"id": "MI15", "name": "Anshul Kamboj", "role": "Bowler", "price": 20},
+            {"id": "MI16", "name": "Nehal Wadhera", "role": "Batsman", "price": 20},
+            {"id": "MI17", "name": "Shreyas Gopal", "role": "Bowler", "price": 20},
+            {"id": "MI18", "name": "Akash Madhwal", "role": "Bowler", "price": 20},
+            {"id": "MI19", "name": "Kumar Kartikeya", "role": "Bowler", "price": 20},
+            {"id": "MI20", "name": "Arjun Tendulkar", "role": "All-rounder", "price": 30},
+            {"id": "MI21", "name": "Hrithik Shokeen", "role": "All-rounder", "price": 20},
+            {"id": "MI22", "name": "Raghav Goyal", "role": "Bowler", "price": 20},
+            {"id": "MI23", "name": "Suryansh Shedge", "role": "All-rounder", "price": 20},
+            {"id": "MI24", "name": "Kwena Maphaka", "role": "Bowler", "price": 0.5},
+            {"id": "MI25", "name": "Nuwan Thushara", "role": "Bowler", "price": 4.8}
         ]
     }
+    # Add other teams similarly
+}
+
+# IPL 2025 Matches
+MATCHES = [
+    {
+        "match_id": 1,
+        "match_no": 1,
+        "date": "2025-03-22",
+        "time": "19:30",
+        "venue": "M. A. Chidambaram Stadium, Chennai",
+        "team1": "Chennai Super Kings",
+        "team2": "Royal Challengers Bangalore",
+        "stage": "Group Stage"
+    },
+    {
+        "match_id": 2,
+        "match_no": 2,
+        "date": "2025-03-23",
+        "time": "15:30",
+        "venue": "Eden Gardens, Kolkata",
+        "team1": "Kolkata Knight Riders",
+        "team2": "Sunrisers Hyderabad",
+        "stage": "Group Stage"
+    }
+    # Add all 72 matches
 ]
 
-def get_match(match_id):
-    """Get match data by match ID"""
-    return next((m for m in schedule if m['match_id'] == match_id), None)
+def get_match(match_no: int) -> dict:
+    """Get match details by match number"""
+    for match in MATCHES:
+        if match["match_no"] == match_no:
+            return match
+    return None
 
-def get_team(team_name):
-    """Get team data by team name"""
-    return next((t for t in teams if t['name'] == team_name), None)
+def get_team(team_name: str) -> dict:
+    """Get team details by team name"""
+    return TEAMS.get(team_name)
 
-def get_player(player_id):
-    """Get player data by player ID"""
-    for team in teams:
-        for player in team['players']:
-            if player['id'] == player_id:
-                return player
-    return None 
+def get_all_matches() -> list:
+    """Get all matches"""
+    return MATCHES
+
+def get_all_teams() -> list:
+    """Get all teams"""
+    return list(TEAMS.keys()) 

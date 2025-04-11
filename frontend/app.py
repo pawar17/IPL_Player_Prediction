@@ -14,7 +14,7 @@ project_root = Path(__file__).parent.parent
 sys.path.append(str(project_root))
 
 # Import prediction system
-from src.predict_player_performance import PlayerPredictionSystem
+from src.prediction.predict_player_performance import PlayerPredictionSystem
 
 # Set page configuration
 st.set_page_config(

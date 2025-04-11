@@ -1,94 +1,34 @@
-# IPL Player Performance Prediction System
+# IPL Player Performance Prediction
 
-A full-stack web application that predicts player performance in IPL matches using historical data, real-time statistics, and machine learning models.
+A machine learning system that predicts player performance in IPL matches using historical data and real-time match conditions.
 
-## Project Overview
+## Features
 
-This system combines historical IPL data with real-time statistics from Cricbuzz to predict player performance in upcoming matches. The application features a Flask backend API and a React frontend interface.
-
-### Key Features
-
-- Real-time data collection from Cricbuzz API
-- Historical data analysis from IPL datasets
+- Historical IPL data collection and processing
+- Real-time match data collection from Cricbuzz API
 - Player performance prediction using machine learning
-- Interactive web interface for match selection and prediction viewing
-- Automated data collection and processing pipeline
-- Regular updates of player statistics and team information
-
-## Technology Stack
-
-### Backend
-- Python 3.9
-- Flask (Web Framework)
-- Pandas (Data Processing)
-- Scikit-learn (Machine Learning)
-- Gunicorn (Production Server)
-
-### Frontend
-- React.js
-- Material-UI
-- Axios (API Client)
-
-### Data Sources
-- Cricbuzz RapidAPI
-- Historical IPL datasets (CSV files)
-- Real-time match statistics
+- Interactive web interface for predictions
+- Automated data collection and model updates
 
 ## Project Structure
 
 ```
 IPL_Player_Prediction/
-├── app.py                 # Flask backend application
-├── frontend/             # React frontend application
-│   ├── src/
-│   │   ├── api.js       # API client
-│   │   └── components/  # React components
-│   └── package.json
-├── src/
-│   ├── data_collection/  # Data collection modules
-│   │   └── ipl_2025_data.py
-│   └── predict_player_performance.py
-├── data/                 # Data storage
-│   ├── historical/      # Historical IPL data
-│   └── processed/       # Processed data for predictions
-├── requirements.txt     # Python dependencies
-└── Procfile            # Production configuration
+├── src/                      # Source code
+│   ├── data_collection/      # Data collection modules
+│   └── prediction/           # Prediction models
+├── data/                     # Data storage
+│   ├── historical/           # Historical IPL data
+│   └── processed/           # Processed datasets
+├── models/                   # Trained ML models
+├── frontend/                 # React frontend
+├── static/                   # Static files
+├── app.py                    # Flask application
+├── config.py                # Configuration
+└── requirements.txt         # Python dependencies
 ```
 
-## Data Sources and Processing
-
-### Historical Data
-- IPL match results (2008-2024)
-- Player statistics
-- Team performance metrics
-- Venue information
-
-### Real-time Data (Cricbuzz API)
-- Live match statistics
-- Player rankings
-- Team rankings
-- Trending players
-- Recent match data
-
-### Data Processing Pipeline
-1. Data Collection
-   - Historical data loading
-   - Real-time data fetching
-   - Data validation and cleaning
-
-2. Feature Engineering
-   - Match importance calculation
-   - Pressure index computation
-   - Venue factor analysis
-   - Team and player form calculation
-   - Consistency scoring
-
-3. Prediction Model
-   - Player performance prediction
-   - Match outcome analysis
-   - Team composition optimization
-
-## Setup and Installation
+## Setup
 
 1. Clone the repository:
 ```bash
@@ -96,74 +36,79 @@ git clone https://github.com/yourusername/IPL_Player_Prediction.git
 cd IPL_Player_Prediction
 ```
 
-2. Set up Python environment:
+2. Create and activate virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
 
-3. Set up frontend:
+4. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+5. Install frontend dependencies:
 ```bash
 cd frontend
 npm install
+npm run build
+cd ..
 ```
 
-4. Configure environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your Cricbuzz API key and other configurations
-```
-
-## Running the Application
-
-### Development Mode
+## Usage
 
 1. Start the Flask backend:
 ```bash
 python app.py
 ```
 
-2. Start the React frontend:
+2. Start the frontend development server:
 ```bash
 cd frontend
 npm start
 ```
 
-### Production Mode
+3. Access the application at http://localhost:3000
 
-1. Build the frontend:
+## Data Collection
+
+The system collects data from two main sources:
+1. Historical IPL data (2008-2024)
+2. Real-time match data from Cricbuzz API
+
+Data collection is automated using the scheduler module:
 ```bash
-cd frontend
-npm run build
+python src/data_collection/scheduler.py
 ```
 
-2. Start the production server:
-```bash
-gunicorn app:app
-```
+## Prediction System
 
-## Deployment
-
-The application is configured for deployment on Azure App Service. See `deploy_azure.ps1` for deployment instructions.
+The prediction system uses various features:
+- Historical player performance
+- Recent form
+- Venue statistics
+- Team composition
+- Opposition strength
+- Match conditions
+- Player role and position
 
 ## API Endpoints
 
-### Match Endpoints
-- `GET /api/matches` - Get all IPL 2025 matches
-- `GET /api/matches/<match_id>/predictions` - Get predictions for a specific match
-
-### Player Endpoints
-- `GET /api/players` - Get all players with statistics
-- `GET /api/players/<player_id>/predictions` - Get predictions for a specific player
-
-### Team Endpoints
-- `GET /api/teams` - Get all teams and their players
+- `/api/matches`: Get upcoming matches
+- `/api/match/<id>/teams`: Get teams for a match
+- `/api/predict/team`: Get team predictions
+- `/api/predict/player`: Get player predictions
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
+2. Create your feature branch
 3. Commit your changes
 4. Push to the branch
 5. Create a Pull Request
@@ -171,9 +116,3 @@ The application is configured for deployment on Azure App Service. See `deploy_a
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Cricbuzz API for providing real-time cricket data
-- IPL datasets for historical data
-- Contributors and maintainers of all used libraries and frameworks

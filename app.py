@@ -6,9 +6,10 @@ from datetime import datetime
 import pandas as pd
 from src.data_collection.data_collector import DataCollector
 from src.data_collection.data_processor import DataProcessor
-from src.predict_player_performance import predict_player_performance
+from src.prediction.predict_player_performance import PlayerPredictionSystem
 import os
 from logging_config import logger
+from src.data_collection.cricbuzz_collector import CricbuzzCollector
 
 # Initialize Flask app with correct static folder path
 static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
@@ -48,39 +49,116 @@ def load_ipl_matches():
 @app.route('/api/matches')
 def get_matches():
     """Get all IPL 2025 matches"""
-    matches = load_ipl_matches()
-    return jsonify(matches)
+    try:
+        matches = load_ipl_matches()
+        return jsonify(matches)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/matches/<match_id>/predictions')
-def get_match_predictions(match_id):
+@app.route('/api/matches/<int:match_no>/predictions')
+def get_match_predictions(match_no):
     """Get predictions for all players in a specific match"""
     try:
         # Get match details
-        matches = load_ipl_matches()
-        match = next((m for m in matches if m['match_id'] == match_id), None)
-        
+        match = get_match(match_no)
         if not match:
             return jsonify({"error": "Match not found"}), 404
             
+        # Get team details
+        team1 = get_team(match['team1'])
+        team2 = get_team(match['team2'])
+        
+        if not team1 or not team2:
+            return jsonify({"error": "Team data not found"}), 404
+            
+        # Get match squads from Cricbuzz
+        cricbuzz = CricbuzzCollector()
+        squads = cricbuzz.get_match_squads(match_no)
+        
         # Get predictions for each player
         predictions = []
-        for team in [match['team1'], match['team2']]:
-            team_data = next((t for t in collector.teams if t['name'] == team), None)
-            if team_data:
-                for player in team_data['players']:
-                    # Get player prediction
-                    prediction = predict_player_performance(
-                        player_id=player['id'],
-                        match_id=match_id,
-                        historical_data=processor.get_historical_data(),
-                        current_form=processor.get_player_form(player['id'])
-                    )
-                    predictions.append({
-                        'player': player,
-                        'prediction': prediction
-                    })
         
-        return jsonify(predictions)
+        # Team 1 predictions
+        for player in team1['players']:
+            # Check if player is in playing XI
+            is_playing = player['name'] in squads['team1']['playing_xi']
+            
+            if is_playing:
+                # Get player's current form
+                current_form = cricbuzz.get_player_stats(player['name'])
+                
+                # Get historical data
+                historical_data = processor.get_player_historical_data(player['id'])
+                
+                # Generate prediction
+                prediction = PlayerPredictionSystem.predict_player_performance(
+                    player_id=player['id'],
+                    match_id=match_no,
+                    historical_data=historical_data,
+                    current_form=current_form
+                )
+                
+                predictions.append({
+                    'player': player,
+                    'team': match['team1'],
+                    'is_playing': True,
+                    'prediction': prediction
+                })
+            else:
+                predictions.append({
+                    'player': player,
+                    'team': match['team1'],
+                    'is_playing': False,
+                    'prediction': None
+                })
+        
+        # Team 2 predictions
+        for player in team2['players']:
+            # Check if player is in playing XI
+            is_playing = player['name'] in squads['team2']['playing_xi']
+            
+            if is_playing:
+                # Get player's current form
+                current_form = cricbuzz.get_player_stats(player['name'])
+                
+                # Get historical data
+                historical_data = processor.get_player_historical_data(player['id'])
+                
+                # Generate prediction
+                prediction = PlayerPredictionSystem.predict_player_performance(
+                    player_id=player['id'],
+                    match_id=match_no,
+                    historical_data=historical_data,
+                    current_form=current_form
+                )
+                
+                predictions.append({
+                    'player': player,
+                    'team': match['team2'],
+                    'is_playing': True,
+                    'prediction': prediction
+                })
+            else:
+                predictions.append({
+                    'player': player,
+                    'team': match['team2'],
+                    'is_playing': False,
+                    'prediction': None
+                })
+        
+        # Get team news
+        team1_news = cricbuzz.get_team_news(match['team1'])
+        team2_news = cricbuzz.get_team_news(match['team2'])
+        
+        return jsonify({
+            'match': match,
+            'predictions': predictions,
+            'team_news': {
+                match['team1']: team1_news,
+                match['team2']: team2_news
+            }
+        })
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -94,7 +172,7 @@ def get_player_predictions(player_id):
         # Get predictions for each match
         predictions = []
         for match in recent_matches:
-            prediction = predict_player_performance(
+            prediction = PlayerPredictionSystem.predict_player_performance(
                 player_id=player_id,
                 match_id=match['match_id'],
                 historical_data=processor.get_historical_data(),
@@ -111,9 +189,12 @@ def get_player_predictions(player_id):
 
 @app.route('/api/teams')
 def get_teams():
-    """Get all teams and their players"""
-    teams = collector.teams
-    return jsonify(teams)
+    """Get all IPL 2025 teams"""
+    try:
+        teams = get_all_teams()
+        return jsonify(teams)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/players')
 def get_players():

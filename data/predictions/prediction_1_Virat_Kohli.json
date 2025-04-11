@@ -1,0 +1,24 @@
+{
+  "batting": {
+    "prediction": 0.0,
+    "confidence_interval": {
+      "lower": 0.0,
+      "upper": 0.0
+    }
+  },
+  "bowling": {
+    "prediction": 0.0,
+    "confidence_interval": {
+      "lower": 0.0,
+      "upper": 0.0
+    }
+  },
+  "fielding": {
+    "prediction": 0.0,
+    "confidence_interval": {
+      "lower": 0.0,
+      "upper": 0.0
+    }
+  },
+  "timestamp": "2025-04-03T14:12:37.606241"
+}

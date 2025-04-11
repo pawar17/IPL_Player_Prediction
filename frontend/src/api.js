@@ -1,17 +1,33 @@
 // Use relative path for API calls
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 export const api = {
     // Get all matches
     getMatches: async () => {
-        const response = await fetch(`${API_BASE_URL}/matches`);
-        return response.json();
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/matches`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch matches');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching matches:', error);
+            throw error;
+        }
     },
 
     // Get predictions for a specific match
-    getMatchPredictions: async (matchId) => {
-        const response = await fetch(`${API_BASE_URL}/matches/${matchId}/predictions`);
-        return response.json();
+    getMatchPredictions: async (matchNo) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/matches/${matchNo}/predictions`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch match predictions');
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching match predictions:', error);
+            throw error;
+        }
     },
 
     // Get predictions for a specific player

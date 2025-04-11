@@ -1,7 +1,8 @@
 """
-Data collection package for IPL Player Prediction
+Data collection and processing module for IPL Player Prediction System
 """
 
-from .ipl_2025_data import schedule, teams, get_match, get_team, get_player
+from .data_pipeline import DataPipeline
+from .cricbuzz_collector import CricbuzzCollector
 
-__all__ = ['schedule', 'teams', 'get_match', 'get_team', 'get_player'] 
+__all__ = ['DataPipeline', 'CricbuzzCollector'] 

@@ -1,0 +1,236 @@
+{
+    "MS Dhoni": {
+        "batting": {
+            "runs": 28,
+            "strike_rate": 175.0,
+            "average": 28.0,
+            "form_factor": 1.2
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Ruturaj Gaikwad": {
+        "batting": {
+            "runs": 85,
+            "strike_rate": 148.5,
+            "average": 42.5,
+            "form_factor": 1.3
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Devon Conway": {
+        "batting": {
+            "runs": 65,
+            "strike_rate": 135.4,
+            "average": 32.5,
+            "form_factor": 1.1
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Ajinkya Rahane": {
+        "batting": {
+            "runs": 45,
+            "strike_rate": 140.6,
+            "average": 22.5,
+            "form_factor": 1.0
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Shivam Dube": {
+        "batting": {
+            "runs": 55,
+            "strike_rate": 158.2,
+            "average": 27.5,
+            "form_factor": 1.2
+        },
+        "bowling": {
+            "wickets": 1,
+            "economy": 9.5,
+            "average": 38.0
+        }
+    },
+    "Ravindra Jadeja": {
+        "batting": {
+            "runs": 35,
+            "strike_rate": 145.8,
+            "average": 35.0,
+            "form_factor": 1.4
+        },
+        "bowling": {
+            "wickets": 4,
+            "economy": 7.2,
+            "average": 22.5
+        }
+    },
+    "Deepak Chahar": {
+        "batting": {
+            "runs": 12,
+            "strike_rate": 133.3,
+            "average": 12.0,
+            "form_factor": 1.1
+        },
+        "bowling": {
+            "wickets": 3,
+            "economy": 8.5,
+            "average": 28.0
+        }
+    },
+    "Tushar Deshpande": {
+        "batting": {
+            "runs": 5,
+            "strike_rate": 125.0,
+            "average": 5.0,
+            "form_factor": 1.0
+        },
+        "bowling": {
+            "wickets": 2,
+            "economy": 9.2,
+            "average": 32.5
+        }
+    },
+    "Matheesha Pathirana": {
+        "batting": {
+            "runs": 0,
+            "strike_rate": 0,
+            "average": 0,
+            "form_factor": 1.2
+        },
+        "bowling": {
+            "wickets": 4,
+            "economy": 8.8,
+            "average": 24.5
+        }
+    },
+    "Rohit Sharma": {
+        "batting": {
+            "runs": 75,
+            "strike_rate": 152.3,
+            "average": 37.5,
+            "form_factor": 1.1
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Ishan Kishan": {
+        "batting": {
+            "runs": 68,
+            "strike_rate": 145.7,
+            "average": 34.0,
+            "form_factor": 1.2
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Tilak Varma": {
+        "batting": {
+            "runs": 82,
+            "strike_rate": 158.8,
+            "average": 41.0,
+            "form_factor": 1.3
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Hardik Pandya": {
+        "batting": {
+            "runs": 58,
+            "strike_rate": 155.2,
+            "average": 29.0,
+            "form_factor": 1.4
+        },
+        "bowling": {
+            "wickets": 2,
+            "economy": 8.8,
+            "average": 35.0
+        }
+    },
+    "Tim David": {
+        "batting": {
+            "runs": 45,
+            "strike_rate": 180.0,
+            "average": 45.0,
+            "form_factor": 1.1
+        },
+        "bowling": {
+            "wickets": 0,
+            "economy": 0,
+            "average": 0
+        }
+    },
+    "Romario Shepherd": {
+        "batting": {
+            "runs": 25,
+            "strike_rate": 166.7,
+            "average": 25.0,
+            "form_factor": 1.0
+        },
+        "bowling": {
+            "wickets": 2,
+            "economy": 9.5,
+            "average": 38.0
+        }
+    },
+    "Gerald Coetzee": {
+        "batting": {
+            "runs": 8,
+            "strike_rate": 133.3,
+            "average": 8.0,
+            "form_factor": 1.2
+        },
+        "bowling": {
+            "wickets": 3,
+            "economy": 8.2,
+            "average": 26.0
+        }
+    },
+    "Jasprit Bumrah": {
+        "batting": {
+            "runs": 2,
+            "strike_rate": 100.0,
+            "average": 2.0,
+            "form_factor": 1.5
+        },
+        "bowling": {
+            "wickets": 5,
+            "economy": 7.5,
+            "average": 18.5
+        }
+    },
+    "Piyush Chawla": {
+        "batting": {
+            "runs": 5,
+            "strike_rate": 125.0,
+            "average": 5.0,
+            "form_factor": 1.1
+        },
+        "bowling": {
+            "wickets": 3,
+            "economy": 8.0,
+            "average": 28.5
+        }
+    }
+} 

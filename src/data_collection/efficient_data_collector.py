@@ -54,14 +54,11 @@ class EfficientDataCollector:
     def _load_ipl_data(self):
         """Load IPL 2025 schedule and team data"""
         try:
-            from src.data_collection.ipl_2025_data import IPL2025Data
+            from .ipl_2025_data import IPL2025Data
             return IPL2025Data()
         except ImportError:
             self.logger.error("Failed to import IPL2025Data. Using empty data.")
-            return {
-                'teams': {},
-                'schedule': []
-            }
+            return None
     
     def load_historical_data(self) -> pd.DataFrame:
         """

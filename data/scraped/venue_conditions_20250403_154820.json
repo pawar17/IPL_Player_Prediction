@@ -1,0 +1,21 @@
+{
+    "MA Chidambaram Stadium": {
+        "pitch_type": "Spin Friendly",
+        "weather": "Clear",
+        "average_first_innings_score": 175,
+        "average_second_innings_score": 165,
+        "toss_advantage": "Bat First",
+        "spin_assistance": 0.8,
+        "pace_assistance": 0.4,
+        "dew_factor": 0.3,
+        "boundary_sizes": {
+            "straight": 75,
+            "square": 68
+        },
+        "historical_stats": {
+            "average_runs_per_over": 8.2,
+            "average_wickets_per_match": 12.5,
+            "average_runs_per_wicket": 24.8
+        }
+    }
+} 

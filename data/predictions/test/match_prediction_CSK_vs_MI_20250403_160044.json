@@ -1,0 +1,330 @@
+{
+    "CSK": [
+        {
+            "player_name": "MS Dhoni",
+            "role": "Wicket Keeper Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Ruturaj Gaikwad",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Devon Conway",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Ajinkya Rahane",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Shivam Dube",
+            "role": "All-rounder",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Ravindra Jadeja",
+            "role": "All-rounder",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Deepak Chahar",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Tushar Deshpande",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Matheesha Pathirana",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        }
+    ],
+    "MI": [
+        {
+            "player_name": "Rohit Sharma",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Ishan Kishan",
+            "role": "Wicket Keeper Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Tilak Varma",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Hardik Pandya",
+            "role": "All-rounder",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Tim David",
+            "role": "Batsman",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Romario Shepherd",
+            "role": "All-rounder",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Gerald Coetzee",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Jasprit Bumrah",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        },
+        {
+            "player_name": "Piyush Chawla",
+            "role": "Bowler",
+            "batting": {
+                "predicted_runs": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            },
+            "bowling": {
+                "predicted_wickets": 0.0,
+                "confidence_interval": {
+                    "lower": 0,
+                    "upper": 0.0
+                }
+            }
+        }
+    ]
+}
