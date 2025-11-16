@@ -13,7 +13,8 @@ def run_frontend():
     """Run the React frontend"""
     print("Starting React frontend...")
     frontend_dir = Path('frontend')
-    subprocess.Popen(['npm', 'start'], cwd=frontend_dir)
+    # Use shell=True on Windows to find npm in PATH
+    subprocess.Popen(['npm', 'start'], cwd=frontend_dir, shell=True)
 
 def main():
     # Create necessary directories

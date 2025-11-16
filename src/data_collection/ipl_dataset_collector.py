@@ -23,8 +23,16 @@ class IPLDatasetCollector:
         self.data_path = self.base_path / 'data'
         self.ipl_dataset_path = self.data_path / 'ipl_dataset'
         self.base_url = "https://raw.githubusercontent.com/your-username/IPL-DATASET/main/csv/"
-        self.csv_dir = self.dataset_path / 'csv'
-        self.json_dir = self.dataset_path / 'json'
+        
+        # Check if dataset_path already points to csv directory or parent directory
+        if (self.dataset_path / 'csv').exists():
+            self.csv_dir = self.dataset_path / 'csv'
+        elif (self.dataset_path / 'Ball_By_Ball_Match_Data.csv').exists():
+            self.csv_dir = self.dataset_path
+        else:
+            self.csv_dir = self.dataset_path
+        
+        self.json_dir = self.dataset_path / 'json' if (self.dataset_path / 'json').exists() else None
         
         # Create necessary directories
         self.ipl_dataset_path.mkdir(parents=True, exist_ok=True)
@@ -55,8 +63,34 @@ class IPLDatasetCollector:
     def get_player_stats(self, player_name: str) -> Dict[str, Any]:
         """Get player statistics from IPL dataset."""
         try:
-            # Load ball-by-ball data
-            ball_data = pd.read_csv(self.dataset_path / 'Ball_By_Ball_Match_Data.csv')
+            # Load ball-by-ball data - try multiple possible paths
+            possible_paths = [
+                self.csv_dir / 'Ball_By_Ball_Match_Data.csv',
+                self.dataset_path / 'Ball_By_Ball_Match_Data.csv',
+                self.dataset_path / 'csv' / 'Ball_By_Ball_Match_Data.csv',
+            ]
+            
+            ball_data_path = None
+            for path in possible_paths:
+                if path.exists():
+                    ball_data_path = path
+                    break
+            
+            if not ball_data_path or not ball_data_path.exists():
+                logger.error(f"Ball-by-ball data file not found. Tried: {possible_paths}")
+                return {
+                    'batting_average': 0.0,
+                    'strike_rate': 0.0,
+                    'bowling_economy': 0.0,
+                    'recent_matches': 0
+                }
+            
+            ball_data = pd.read_csv(ball_data_path)
+            
+            # Get all unique player names from the dataset for fuzzy matching
+            all_batters = set(ball_data['Batter'].dropna().unique())
+            all_bowlers = set(ball_data['Bowler'].dropna().unique())
+            all_players = all_batters.union(all_bowlers)
             
             # Name mapping for players with their variations
             name_mapping = {
@@ -85,6 +119,16 @@ class IPLDatasetCollector:
                     initials = ''.join(p[0] for p in parts[:-1])
                     last_name = parts[-1]
                     mapped_names.append(f"{initials} {last_name}")
+                    # Also try with space after initials
+                    mapped_names.append(f"{initials} {last_name}")
+            
+            # Try fuzzy matching - check if any part of the name matches
+            if not any(name in all_players for name in mapped_names):
+                # Try partial matching
+                last_name = player_name.split()[-1] if ' ' in player_name else player_name
+                matching_players = [p for p in all_players if last_name.lower() in p.lower() or p.lower() in player_name.lower()]
+                if matching_players:
+                    mapped_names.extend(matching_players[:3])  # Add top 3 matches
             
             # Find matches for any of the name variations
             player_matches = ball_data[
@@ -93,7 +137,7 @@ class IPLDatasetCollector:
             ]
             
             if player_matches.empty:
-                logger.warning(f"No matches found for player {player_name} (tried variations: {mapped_names})")
+                logger.warning(f"No matches found for player {player_name} (tried variations: {mapped_names[:5]})")
                 return {
                     'batting_average': 0.0,
                     'strike_rate': 0.0,

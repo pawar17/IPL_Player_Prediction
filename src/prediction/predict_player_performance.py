@@ -732,8 +732,8 @@ if __name__ == "__main__":
             prediction = system.predict_player_performance(args.player, args.match, {}, {})
             print(json.dumps(prediction, indent=2))
         elif args.team:
-        predictions = system.predict_team_performance(args.match, args.team)
+            predictions = system.predict_team_performance(args.match, args.team)
             print(json.dumps(predictions, indent=2))
         else:
-        predictions = system.predict_match_performance(args.match)
+            predictions = system.predict_match_performance(args.match)
             print(json.dumps(predictions, indent=2))

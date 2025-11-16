@@ -9,10 +9,12 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "@types/react": "^18.3.20",
     "@types/prop-types": "^15.7.14",
+    "@types/react": "^18.3.20",
     "axios": "^1.6.2",
+    "bootstrap": "^5.3.8",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
     "react-scripts": "5.0.1",
@@ -45,4 +47,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}
